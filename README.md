@@ -14,14 +14,25 @@ El recorrido está pensado para desarrollar tres capacidades:
 
 ## Estado del proyecto
 
-La versión actual contiene la primera misión funcional: **«Una imagen es una tabla de números»**.
+La versión actual contiene el **Sector 01 completo: «La imagen como dato»**.
+
+Sus siete misiones son:
+
+1. píxeles y matrices;
+2. forma y coordenadas;
+3. profundidad de bits, tipos y rangos;
+4. canales de color;
+5. espacios de color;
+6. muestreo, resolución y aliasing;
+7. tensores, lotes y contratos de entrada.
 
 Incluye:
 
-- explicación gradual sobre píxeles, matrices, tensores y canales RGB;
-- laboratorio interactivo para seleccionar un píxel y modificar su intensidad;
-- pregunta de comprobación con explicación específica para cada error;
-- guardado local de la lección superada;
+- siete explicaciones progresivas, desde la intuición hasta el vocabulario técnico;
+- siete microlaboratorios manipulables, uno por misión;
+- 21 preguntas de razonamiento con explicación específica para cada opción;
+- desbloqueo secuencial con criterio de dominio de 3/3 por misión;
+- guardado local del progreso y reanudación desde la última misión;
 - cuaderno de apuntes personales sin modificar el contenido verificado;
 - modo de lectura cálido y oscuro;
 - tamaño de texto regulable y modo concentración;
@@ -103,9 +114,11 @@ pnpm build
 
 ```text
 app/
+  course-data.ts     Contenido, preguntas y fuentes del Sector 01
+  lesson-labs.tsx    Siete laboratorios interactivos
   globals.css        Tema visual y diseño responsive
   layout.tsx         Metadatos y estructura raíz
-  page.tsx           Primera misión, laboratorio, test y apuntes
+  page.tsx           Navegación, progreso, evaluaciones y apuntes
 components/ui/       Componentes de interfaz reutilizables
 public/              Icono y arte visual del proyecto
 ```
@@ -116,10 +129,9 @@ En esta primera versión, los apuntes, las preferencias de lectura y el progreso
 
 ## Próximos pasos
 
-- completar el primer sector: bits, rango dinámico, canales, espacios de color y coordenadas;
+- construir el Sector 02 sobre las matemáticas necesarias;
 - definir objetivos y prueba de dominio para cada sector;
 - añadir repetición espaciada y registro de errores frecuentes;
-- ampliar los laboratorios interactivos;
 - preparar bloques específicos de diseño de sistemas y entrevistas técnicas.
 
 ## Arte
