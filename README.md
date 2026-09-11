@@ -14,20 +14,24 @@ El recorrido está pensado para desarrollar tres capacidades:
 
 ## Estado del proyecto
 
-La versión actual contiene dos sectores completos:
+La versión actual contiene tres sectores completos:
 
 - **Sector 01 · La imagen como dato:** 7 misiones.
 - **Sector 02 · Matemáticas necesarias:** 12 misiones.
+- **Sector 03 · Operaciones sobre imágenes:** 12 misiones.
 
 El segundo sector cubre estructuras numéricas, broadcasting, normas y distancias, producto escalar, similitud coseno, producto matricial, rango, inversa, condicionamiento, autovalores, SVD, PCA, gradientes, regla de la cadena, probabilidad, estadística y estabilidad numérica.
 
+El tercer sector cubre aritmética de píxeles, curvas de intensidad, máscaras, umbrales, kernels, correlación y convolución, padding, suavizado, mediana, bilateral, Sobel, Scharr, Laplaciano, enfoque, Canny, Fourier y diseño de pipelines de filtrado.
+
 Incluye:
 
-- 19 explicaciones progresivas, desde la intuición hasta el vocabulario técnico;
-- 19 microlaboratorios manipulables, uno por misión;
-- 57 preguntas de razonamiento con explicación específica para cada opción;
+- 31 explicaciones progresivas, desde la intuición hasta el vocabulario técnico;
+- 31 microlaboratorios manipulables, uno por misión;
+- 93 preguntas de razonamiento con explicación específica para cada opción;
 - desbloqueo secuencial con criterio de dominio de 3/3 por misión;
 - desbloqueo del Sector 02 al dominar el Sector 01;
+- desbloqueo del Sector 03 al dominar el Sector 02;
 - guardado local del progreso y migración automática desde las versiones anteriores;
 - cuaderno de apuntes personales sin modificar el contenido verificado;
 - modo de lectura cálido y oscuro;
@@ -112,9 +116,11 @@ pnpm build
 app/
   course-data.ts     Tipos compartidos y contenido del Sector 01
   sector-two-data.ts Contenido, preguntas y fuentes del Sector 02
+  sector-three-data.ts Contenido, preguntas y fuentes del Sector 03
   course-map.ts      Mapa de sectores y catálogo de lecciones
   lesson-labs.tsx    Laboratorios de fundamentos visuales
   math-labs.tsx      Doce laboratorios matemáticos
+  filter-labs.tsx    Doce laboratorios de operaciones y filtrado
   globals.css        Tema visual y diseño responsive
   layout.tsx         Metadatos y estructura raíz
   page.tsx           Navegación, progreso, evaluaciones y apuntes
@@ -128,7 +134,7 @@ En esta primera versión, los apuntes, las preferencias de lectura y el progreso
 
 ## Próximos pasos
 
-- construir el Sector 03 sobre operaciones y filtros de imagen;
+- construir el Sector 04 sobre morfología e histogramas;
 - definir objetivos y prueba de dominio para cada sector;
 - añadir repetición espaciada y registro de errores frecuentes;
 - preparar bloques específicos de diseño de sistemas y entrevistas técnicas.
