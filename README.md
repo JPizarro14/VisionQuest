@@ -14,25 +14,21 @@ El recorrido está pensado para desarrollar tres capacidades:
 
 ## Estado del proyecto
 
-La versión actual contiene el **Sector 01 completo: «La imagen como dato»**.
+La versión actual contiene dos sectores completos:
 
-Sus siete misiones son:
+- **Sector 01 · La imagen como dato:** 7 misiones.
+- **Sector 02 · Matemáticas necesarias:** 12 misiones.
 
-1. píxeles y matrices;
-2. forma y coordenadas;
-3. profundidad de bits, tipos y rangos;
-4. canales de color;
-5. espacios de color;
-6. muestreo, resolución y aliasing;
-7. tensores, lotes y contratos de entrada.
+El segundo sector cubre estructuras numéricas, broadcasting, normas y distancias, producto escalar, similitud coseno, producto matricial, rango, inversa, condicionamiento, autovalores, SVD, PCA, gradientes, regla de la cadena, probabilidad, estadística y estabilidad numérica.
 
 Incluye:
 
-- siete explicaciones progresivas, desde la intuición hasta el vocabulario técnico;
-- siete microlaboratorios manipulables, uno por misión;
-- 21 preguntas de razonamiento con explicación específica para cada opción;
+- 19 explicaciones progresivas, desde la intuición hasta el vocabulario técnico;
+- 19 microlaboratorios manipulables, uno por misión;
+- 57 preguntas de razonamiento con explicación específica para cada opción;
 - desbloqueo secuencial con criterio de dominio de 3/3 por misión;
-- guardado local del progreso y reanudación desde la última misión;
+- desbloqueo del Sector 02 al dominar el Sector 01;
+- guardado local del progreso y migración automática desde las versiones anteriores;
 - cuaderno de apuntes personales sin modificar el contenido verificado;
 - modo de lectura cálido y oscuro;
 - tamaño de texto regulable y modo concentración;
@@ -114,8 +110,11 @@ pnpm build
 
 ```text
 app/
-  course-data.ts     Contenido, preguntas y fuentes del Sector 01
-  lesson-labs.tsx    Siete laboratorios interactivos
+  course-data.ts     Tipos compartidos y contenido del Sector 01
+  sector-two-data.ts Contenido, preguntas y fuentes del Sector 02
+  course-map.ts      Mapa de sectores y catálogo de lecciones
+  lesson-labs.tsx    Laboratorios de fundamentos visuales
+  math-labs.tsx      Doce laboratorios matemáticos
   globals.css        Tema visual y diseño responsive
   layout.tsx         Metadatos y estructura raíz
   page.tsx           Navegación, progreso, evaluaciones y apuntes
@@ -129,7 +128,7 @@ En esta primera versión, los apuntes, las preferencias de lectura y el progreso
 
 ## Próximos pasos
 
-- construir el Sector 02 sobre las matemáticas necesarias;
+- construir el Sector 03 sobre operaciones y filtros de imagen;
 - definir objetivos y prueba de dominio para cada sector;
 - añadir repetición espaciada y registro de errores frecuentes;
 - preparar bloques específicos de diseño de sistemas y entrevistas técnicas.
