@@ -14,24 +14,26 @@ El recorrido está pensado para desarrollar tres capacidades:
 
 ## Estado del proyecto
 
-La versión actual contiene tres sectores completos:
+La versión actual contiene cuatro sectores completos:
 
 - **Sector 01 · La imagen como dato:** 7 misiones.
 - **Sector 02 · Matemáticas necesarias:** 12 misiones.
 - **Sector 03 · Operaciones sobre imágenes:** 12 misiones.
+- **Sector 04 · Morfología e histogramas:** 12 misiones.
 
 El segundo sector cubre estructuras numéricas, broadcasting, normas y distancias, producto escalar, similitud coseno, producto matricial, rango, inversa, condicionamiento, autovalores, SVD, PCA, gradientes, regla de la cadena, probabilidad, estadística y estabilidad numérica.
 
 El tercer sector cubre aritmética de píxeles, curvas de intensidad, máscaras, umbrales, kernels, correlación y convolución, padding, suavizado, mediana, bilateral, Sobel, Scharr, Laplaciano, enfoque, Canny, Fourier y diseño de pipelines de filtrado.
 
+El cuarto sector cubre primer plano y elementos estructurantes, erosión, dilatación, apertura, cierre, gradiente morfológico, top-hat, black-hat, morfología en grises, conectividad 4/8, componentes conectados, histogramas escalares y conjuntos, ecualización global, CLAHE, comparación, retroproyección y decisiones de pipeline.
+
 Incluye:
 
-- 31 explicaciones progresivas, desde la intuición hasta el vocabulario técnico;
-- 31 microlaboratorios manipulables, uno por misión;
-- 93 preguntas de razonamiento con explicación específica para cada opción;
+- 43 explicaciones progresivas, desde la intuición hasta el vocabulario técnico;
+- 43 microlaboratorios manipulables, uno por misión;
+- 129 preguntas de razonamiento con explicación específica para cada opción;
 - desbloqueo secuencial con criterio de dominio de 3/3 por misión;
-- desbloqueo del Sector 02 al dominar el Sector 01;
-- desbloqueo del Sector 03 al dominar el Sector 02;
+- desbloqueo de cada sector al dominar el anterior;
 - guardado local del progreso y migración automática desde las versiones anteriores;
 - cuaderno de apuntes personales sin modificar el contenido verificado;
 - modo de lectura cálido y oscuro;
@@ -117,10 +119,12 @@ app/
   course-data.ts     Tipos compartidos y contenido del Sector 01
   sector-two-data.ts Contenido, preguntas y fuentes del Sector 02
   sector-three-data.ts Contenido, preguntas y fuentes del Sector 03
+  sector-four-data.ts Contenido, preguntas y fuentes del Sector 04
   course-map.ts      Mapa de sectores y catálogo de lecciones
   lesson-labs.tsx    Laboratorios de fundamentos visuales
   math-labs.tsx      Doce laboratorios matemáticos
   filter-labs.tsx    Doce laboratorios de operaciones y filtrado
+  morphology-labs.tsx Doce laboratorios de morfología e histogramas
   globals.css        Tema visual y diseño responsive
   layout.tsx         Metadatos y estructura raíz
   page.tsx           Navegación, progreso, evaluaciones y apuntes
@@ -134,7 +138,7 @@ En esta primera versión, los apuntes, las preferencias de lectura y el progreso
 
 ## Próximos pasos
 
-- construir el Sector 04 sobre morfología e histogramas;
+- construir el Sector 05 sobre geometría y visión clásica;
 - definir objetivos y prueba de dominio para cada sector;
 - añadir repetición espaciada y registro de errores frecuentes;
 - preparar bloques específicos de diseño de sistemas y entrevistas técnicas.
