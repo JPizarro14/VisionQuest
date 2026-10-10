@@ -93,25 +93,77 @@ export const sectorTwoLessons: SectorLesson[] = [
     title: "Operar sin mezclar los ejes",
     objective: "Diferenciar operaciones elemento a elemento, reducciones y broadcasting, anticipando la shape resultante.",
     lead: "Una operación puede producir números perfectamente válidos y aun así estar mal planteada. El hábito clave es predecir qué ejes se combinan, cuáles permanecen y cuáles desaparecen.",
-    keyIdea: "Elemento a elemento combina posiciones equivalentes; una reducción elimina o conserva un eje; broadcasting replica conceptualmente dimensiones compatibles.",
+    keyIdea: "NumPy opera sobre arrays; broadcasting permite combinar shapes diferentes cuando sus dimensiones son compatibles desde la derecha.",
     sections: [
       {
-        title: "La multiplicación más común no es matricial",
+        title: "NumPy: la base numérica de las imágenes",
         paragraphs: [
-          "En arrays de NumPy, A * B multiplica elemento a elemento. Para ello las shapes deben coincidir o ser compatibles mediante broadcasting. El operador A @ B representa producto matricial y sigue reglas diferentes.",
-          "Suma, resta, comparación y muchas funciones como seno o exponencial también se aplican elemento a elemento.",
+          "NumPy (Numerical Python) es una biblioteca de Python para trabajar con arrays multidimensionales y hacer cálculos eficientes. Es una herramienta fundamental en Computer Vision: una imagen decodificada suele representarse mediante un array de NumPy, llamado ndarray.",
+          "Un array almacena valores organizados en una o más dimensiones. Su propiedad shape nos dice cuántos elementos tiene cada dimensión; ndim indica el número de dimensiones, dtype el tipo de dato y size el total de elementos. Por ejemplo, np.array([[10, 20, 30], [40, 50, 60]]) tiene shape (2, 3): dos filas y tres columnas.",
+        ],
+        formula: {
+          label: "SHAPE DE UNA IMAGEN RGB",
+          value: "(H, W, C)",
+          parts: ["H = Height / alto (filas)", "W = Width / ancho (columnas)", "C = Channels / canales"],
+        },
+      },
+      {
+        title: "Vector, matriz y tupla: no son lo mismo",
+        paragraphs: [
+          "Un vector NumPy con tres valores tiene shape (3,): es un array de una dimensión. No tiene una fila y tres columnas ni tres filas y una columna; esas son matrices de shapes (1, 3) y (3, 1), respectivamente. En una matriz de dos dimensiones sí interpretamos el shape como (filas, columnas).",
+          "La coma de (3,) no es un error: shape devuelve una tupla de Python. Una tupla es una colección ordenada e inmutable; (3) sería solo el número 3 entre paréntesis, mientras que (3,) es una tupla con un elemento. A diferencia de la tupla, el ndarray de NumPy está optimizado para operaciones numéricas y suele ser mutable y homogéneo.",
+          "En Computer Vision conviene memorizar H = Height (alto o filas), W = Width (ancho o columnas), C = Channels (canales). Una imagen RGB de 1920 píxeles de ancho y 1080 de alto suele tener shape (1080, 1920, 3) = (H, W, C). Una imagen de grises normalmente tiene shape (H, W).",
+        ],
+        formula: {
+          label: "UNA DIMENSIÓN FRENTE A DOS",
+          value: "(3,) ≠ (1, 3) ≠ (3, 1)",
+          parts: ["vector de 3 elementos", "1 fila y 3 columnas", "3 filas y 1 columna"],
+        },
+      },
+      {
+        title: "Operaciones vectorizadas y producto matricial",
+        paragraphs: [
+          "NumPy permite operar con un array completo sin escribir un bucle por cada elemento. Por ejemplo, para A = [[10, 20], [30, 40]], A + 5 devuelve [[15, 25], [35, 45]]. Se puede sumar, restar, multiplicar, dividir o comparar; broadcasting no se limita a la suma.",
+          "No confundas operadores: A * B multiplica elemento a elemento, usando broadcasting si hace falta y es compatible. A @ B realiza producto matricial (filas por columnas) y sigue reglas distintas; para dos matrices 2D, el número de columnas de A debe coincidir con el número de filas de B.",
+          "Operación vectorizada significa operar sobre arrays sin escribir bucles explícitos; broadcasting es el mecanismo adicional que permite combinar shapes diferentes cuando son compatibles.",
         ],
       },
       {
-        title: "Broadcasting: una plantilla repetida",
+        title: "Broadcasting: aplicar un vector a cada fila",
         paragraphs: [
-          "Compara las shapes desde la derecha. Dos ejes son compatibles si tienen el mismo tamaño o si uno mide 1. Una imagen (H, W, 3), con H = Height (alto), W = Width (ancho) y C = Channels (canales), puede sumar un vector (3,) para modificar cada canal.",
-          "La idea de estirar el array pequeño es un modelo mental. NumPy normalmente evita fabricar físicamente todas esas copias, aunque un broadcasting mal elegido puede generar resultados o costes inesperados.",
+          "Imagina A = [[10, 20, 30], [40, 50, 60]] con shape (2, 3) y B = [1, 2, 3] con shape (3,). Al calcular A + B, el resultado es [[11, 22, 33], [41, 52, 63]]. NumPy aplica el mismo vector B a las dos filas, sin que tengas que copiarlo manualmente.",
+          "Eso es broadcasting: permite operaciones elemento a elemento entre arrays con shapes diferentes pero compatibles. Es como repetir una plantilla pequeña sobre la grande, aunque NumPy normalmente evita crear físicamente esas copias.",
         ],
         formula: {
-          label: "COMPATIBILIDAD DESDE LA DERECHA",
+          label: "UN VECTOR SE APLICA A CADA FILA",
+          value: "(2, 3) + (3,) → (2, 3)",
+          parts: ["[10, 20, 30] + [1, 2, 3]", "[40, 50, 60] + [1, 2, 3]", "resultado: [[11, 22, 33], [41, 52, 63]]"],
+        },
+      },
+      {
+        title: "Regla de compatibilidad: empezar por la derecha",
+        paragraphs: [
+          "Compara los shapes desde su última dimensión (derecha hacia izquierda). Cada pareja de ejes es compatible si sus tamaños coinciden o si uno de ellos mide 1. Si un array tiene menos dimensiones, imagina unos a la izquierda: (4,) se alinea como (1, 4) frente a (3, 4), aunque su shape original sigue siendo (4,).",
+          "Por eso (3, 4) + (4,) funciona: se compara (3, 4) con (1, 4), y los dos ejes son compatibles. En cambio, (3, 4) + (3,) falla: se compara (3, 4) con (1, 3); los tamaños finales 4 y 3 no coinciden y ninguno vale 1.",
+          "Si quieres sumar un valor distinto a cada una de las tres filas de una matriz (3, 4), utiliza un array (3, 1), por ejemplo [[10], [20], [30]]. Se aplicará cada valor a las cuatro columnas de su fila.",
+        ],
+        formula: {
+          label: "COMPARACIÓN DE SHAPES",
+          value: "(3, 4) + (1, 4) ✓",
+          parts: ["(3, 4) + (4,) ✓", "(3, 4) + (3,) ✗", "(3, 4) + (3, 1) ✓"],
+        },
+      },
+      {
+        title: "Aplicación real: modificar canales RGB",
+        paragraphs: [
+          "Una imagen RGB suele tener shape (H, W, C), con H = Height (alto), W = Width (ancho) y C = Channels (canales); en RGB, C = 3 (Red, Green, Blue). Si sumamos el vector [20, 10, 0] de shape (3,), aumentamos conceptualmente 20 el rojo y 10 el verde de cada píxel, sin cambiar el azul.",
+          "NumPy alinea (H, W, 3) con (1, 1, 3). El vector se aplica a todos los H × W píxeles y el resultado mantiene shape (H, W, 3). En código: ajuste = np.array([20, 10, 0]); resultado = imagen + ajuste.",
+          "Cuidado: las imágenes uint8 almacenan valores de 0 a 255. Para evitar desbordamientos, convierte primero a un tipo entero más amplio, suma, limita con np.clip(resultado, 0, 255) y después vuelve a uint8. Además, OpenCV suele cargar imágenes en orden BGR, no RGB: el orden de canales del ajuste debe corresponderse con el de la imagen.",
+        ],
+        formula: {
+          label: "BROADCASTING EN COMPUTER VISION",
           value: "(H, W, 3) + (3,)",
-          parts: ["R + r", "G + g", "B + b"],
+          parts: ["H = Height / alto", "W = Width / ancho", "C = Channels / canales RGB"],
         },
       },
       {
@@ -124,7 +176,9 @@ export const sectorTwoLessons: SectorLesson[] = [
     ],
     takeaways: [
       "En NumPy, * suele ser elemento a elemento y @ producto matricial.",
-      "Broadcasting compara las dimensiones desde el último eje.",
+      "Broadcasting compara shapes desde la derecha: tamaños iguales o uno igual a 1.",
+      "H = Height (alto), W = Width (ancho), C = Channels (canales): una imagen RGB suele tener shape (H, W, 3).",
+      "Un vector (3,) no es una matriz (1, 3): la coma indica una tupla de un elemento.",
       "Una reducción debe indicar qué eje se está resumiendo.",
     ],
     questions: [
