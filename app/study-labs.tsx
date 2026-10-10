@@ -1,0 +1,73 @@
+"use client";
+
+import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { advancedProbes } from "@/app/advanced-probes";
+import { finalProbes } from "@/app/final-probes";
+
+type Probe = {
+  label: string; min: number; max: number; initial: number; step?: number;
+  output: (value: number) => { values: [string, string][]; observation: string };
+};
+
+const probes: Record<string, Probe> = {
+  "06.01": { label: "Tamaño del defecto (px)", min: 1, max: 20, initial: 4, output: (n) => ({ values: [["REGLA GLOBAL ILUSTRATIVA", n >= 8 ? "Alarma" : "No detecta"], ["NECESIDAD ESPACIAL", "Localizar cada grieta requiere salida espacial"]], observation: `Una regla de tamaño con umbral 8 ignora dónde está el defecto de ${n} px.` }) },
+  "06.02": { label: "Tiles hermanos que cruzan train/test", min: 0, max: 12, initial: 4, output: (n) => ({ values: [["PARES CON ORIGEN COMPARTIDO", `${n}`], ["SPLIT POR IMAGEN", "0 pares compartidos"]], observation: n ? "La evaluación puede reconocer textura y luz de una imagen ya vista." : "La ausencia de cruces conocidos no prueba por sí sola que no exista otra fuga." }) },
+  "06.03": { label: "Configuraciones elegidas mirando el mismo test", min: 1, max: 30, initial: 5, output: (n) => ({ values: [["PROBABILIDAD DE AL MENOS UN FALSO ÉXITO*", `${Math.round(100 * (1 - 0.95 ** n))}%`], ["PROCEDIMIENTO CORRECTO", "Elegir en validación; consultar test al final"]], observation: "*Ejemplo probabilístico: cada intento independiente tendría un 5% de falso éxito por azar. No es una estimación universal de sesgo real." }) },
+  "06.04": { label: "Número de vecinos (1, 3, 5, 7)", min: 1, max: 4, initial: 1, output: (v) => { const k = 2*v-1, labels = ["A","B","B","A","B","B","A"].slice(0,k), a = labels.filter(x=>x==="A").length; return { values: [["VECINOS MÁS CERCANOS", labels.join(" · ")], ["VOTO UNIFORME", `${a > k-a ? "A" : "B"} (${Math.max(a,k-a)} de ${k})`]], observation: "Los vecinos están ordenados por distancia; variar k cambia qué ejemplos votan." }; } },
+  "06.05": { label: "Penalización C (escala conceptual)", min: 1, max: 10, initial: 3, output: (n) => ({ values: [["PENALIZACIÓN DE VIOLACIONES", n <= 3 ? "Baja" : n <= 7 ? "Intermedia" : "Alta"], ["MARGEN", n <= 3 ? "Puede tolerar más violaciones" : "Presiona por ajustar más train"]], observation: "C no determina por sí solo margen ni error. Los datos y el kernel deciden la solución concreta." }) },
+  "06.06": { label: "Profundidad de árbol (modelo de juguete)", min: 1, max: 10, initial: 3, output: (n) => ({ values: [["ERROR TRAIN SIMULADO", `${Math.max(2, 28 - 3*n)}%`], ["ERROR VALIDACIÓN SIMULADO", `${Math.round(25 - 4*Math.min(n,4) + 2*Math.max(0,n-4))}%`]], observation: "Curvas inventadas para estudiar infraajuste y sobreajuste; no describen todos los datasets." }) },
+  "06.07": { label: "Capacidad (modelo de juguete)", min: 1, max: 10, initial: 5, output: (n) => { const train=Math.max(2,31-3*n), val=24-3*Math.min(n,5)+3*Math.max(0,n-5); return { values: [["ERROR TRAIN SIMULADO", `${train}%`], ["ERROR VALIDACIÓN SIMULADO", `${val}%`], ["BRECHA", `${val-train} puntos`]], observation: "Las curvas son un ejemplo para formular hipótesis; otros patrones pueden deberse a optimización o distribución." }; } },
+  "06.08": { label: "Casos en el test", min: 10, max: 100, step: 10, initial: 20, output: (n) => ({ values: [["PESO DE UN ACIERTO", `${(100/n).toFixed(1)} puntos porcentuales`], ["SI FALLAN 2 CASOS", `${Math.round(100*(n-2)/n)}% de acierto`]], observation: "Un porcentaje sin el número de casos puede sugerir más certeza de la que hay." }) },
+  "07.01": { label: "Peso w para x=2", min: -3, max: 5, initial: 3, output: (w) => { const z=2*w-1; return { values: [["PREACTIVACIÓN", `z=2·${w}−1=${z}`], ["RELU", `${Math.max(0,z)}`]], observation: "El sesgo fijo vale −1; la activación anula respuestas negativas." }; } },
+  "07.02": { label: "Preactivación z", min: -6, max: 6, initial: -3, output: (z) => ({ values: [["RELU(z)", `${Math.max(0,z)}`], ["SIGMOID(z)", `${(1/(1+Math.exp(-z))).toFixed(3)}`]], observation: "Sigmoid comprime un logit; para softmax se necesitan varios logits comparados entre sí." }) },
+  "07.03": { label: "Unidades O de salida", min: 1, max: 12, initial: 3, output: (o) => ({ values: [["PESOS + SESGOS", `${4*o}+${o}=${5*o}`], ["SHAPE DE SALIDA", `(8, ${o})`]], observation: "La entrada del ejemplo tiene shape (8,4), con sesgo activado." }) },
+  "07.04": { label: "Probabilidad de la clase real (%)", min: 1, max: 99, initial: 80, output: (p) => ({ values: [["PÉRDIDA DEL EJEMPLO", `${(-Math.log(p/100)).toFixed(3)}`], ["FORMULA", `−ln(${(p/100).toFixed(2)})`]], observation: "La curva crece mucho cuando el modelo da confianza mínima a la clase verdadera." }) },
+  "07.05": { label: "Derivada local dz/dw", min: -5, max: 5, initial: 3, output: (d) => ({ values: [["dy/dz", "2"], ["dy/dw", `2·${d}=${2*d}`]], observation: "La cadena multiplica derivadas; las rutas paralelas, si existen, se suman." }) },
+  "07.06": { label: "Learning rate η (centésimas)", min: 1, max: 50, initial: 10, output: (n) => ({ values: [["PASO SGD", `2−${(n/100).toFixed(2)}·3`], ["NUEVO PESO", `${(2-3*n/100).toFixed(2)}`]], observation: "Este es un paso local para gradiente fijo 3, no una curva de entrenamiento completa." }) },
+  "07.07": { label: "Dropout (%)", min: 0, max: 80, step: 10, initial: 30, output: (p) => ({ values: [["UNIDADES ESPERADAS ACTIVAS", `${(20*(1-p/100)).toFixed(1)} de 20`], ["MODO EVALUACIÓN", "20 unidades, con la escala propia de la implementación"]], observation: "Es esperanza sobre máscaras aleatorias, no un conteo exacto en cada pasada." }) },
+  "07.08": { label: "Factor local (décimas)", min: 1, max: 20, initial: 5, output: (n) => ({ values: [["UNA ETAPA", `${(n/10).toFixed(1)}`], ["SEIS ETAPAS", `${((n/10)**6).toFixed(4)}`]], observation: "Cadena escalar ilustrativa: los gradientes reales también suman rutas y dependen de matrices." }) },
+  "08.01": { label: "Tamaño de batch", min: 10, max: 50, step: 5, initial: 30, output: (b) => ({ values: [["LOTES PARA N=100", `${Math.ceil(100/b)}`], ["ÚLTIMO LOTE", `${100 % b || b} muestras`]], observation: "Sin drop_last, el resto forma un lote final; acumular gradientes cambia las actualizaciones efectivas." }) },
+  "08.02": { label: "Prevalencia positiva (%)", min: 1, max: 50, initial: 5, output: (p) => ({ values: [["POSITIVOS ESPERADOS EN 20", `${(20*p/100).toFixed(1)}`], ["PROBABILIDAD DE CERO POSITIVOS*", `${Math.round(100*(1-p/100)**20)}%`]], observation: "*Cálculo ilustrativo si las 20 muestras son independientes con la misma prevalencia." }) },
+  "08.03": { label: "Coordenada izquierda de caja", min: 0, max: 80, step: 5, initial: 10, output: (x) => ({ values: [["CAJA ORIGINAL", `[${x}, ${x+20})`], ["TRAS FLIP EN ANCHO 100", `[${80-x}, ${100-x})`]], observation: "Usamos intervalos semiabiertos [x1,x2); la máscara también debe voltearse." }) },
+  "08.04": { label: "Intensidad x", min: 0, max: 200, step: 5, initial: 150, output: (x) => ({ values: [["μ_train / σ_train", "100 / 25"], ["VALOR NORMALIZADO", `${((x-100)/25).toFixed(2)}`]], observation: "Los parámetros se mantienen fijos al evaluar otros ejemplos." }) },
+  "08.05": { label: "Número de descensos", min: 0, max: 5, initial: 2, output: (n) => ({ values: [["η INICIAL", "0,1"], ["η CON FACTOR 0,5", `${(0.1*0.5**n).toFixed(5)}`]], observation: "La frecuencia de los descensos, por lote o por época, debe quedar definida." }) },
+  "08.06": { label: "Época actual", min: 1, max: 10, initial: 6, output: (n) => { const values=[0.9,0.7,0.55,0.48,0.44,0.40,0.43,0.47,0.52,0.58]; const best=Math.min(...values.slice(0,n)); return { values: [["VAL LOSS ACTUAL", `${values[n-1].toFixed(2)}`], ["MEJOR VAL HASTA AHORA", `${best.toFixed(2)} · época ${values.indexOf(best)+1}`]], observation: "Curva ilustrativa: escoger por validación no implica consultar test." }; } },
+  "08.07": { label: "Dispersión simulada (puntos)", min: 0, max: 10, initial: 4, output: (n) => { const scores=[80-2*n,80-n,80,80+n,80+2*n]; return { values: [["CINCO EJECUCIONES", scores.join(" · ")], ["MEDIA", "80%"]], observation: "Misma media, distinta estabilidad: informa ambas y conserva seeds y splits." }; } },
+  "08.08": { label: "Época", min: 1, max: 10, initial: 5, output: (n) => { const train=0.8-0.06*n, val=0.75-0.07*Math.min(n,5)+0.06*Math.max(0,n-5); return { values: [["TRAIN LOSS SIMULADA", train.toFixed(2)], ["VAL LOSS SIMULADA", val.toFixed(2)]], observation: "Val deja de mejorar después de la quinta época en este ejemplo. Averigua por qué antes de cambiar parámetros." }; } },
+  "09.01": { label: "Filtros de salida", min: 1, max: 32, initial: 8, output: (n) => ({ values: [["PESOS 3×3×3×O", `${27*n}`], ["CON SESGO POR FILTRO", `${28*n}`]], observation: "Convolución estándar groups=1 y tres canales de entrada." }) },
+  "09.02": { label: "Stride", min: 1, max: 4, initial: 2, output: (s) => ({ values: [["ENTRADA / KERNEL / PADDING", "8 / 3 / 1"], ["SALIDA POR EJE", `${Math.floor(7/s)+1}`]], observation: "Fórmula sin dilatación: floor((8+2−3)/stride)+1." }) },
+  "09.03": { label: "Capas 3×3 stride 1", min: 1, max: 10, initial: 3, output: (n) => ({ values: [["CAMPO RECEPTIVO TEÓRICO", `${1+2*n}×${1+2*n}`], ["INFLUENCIA EFECTIVA", "Depende de pesos y datos"]], observation: "No hay downsampling ni dilatación en este ejemplo." }) },
+  "09.04": { label: "Valor del cuarto píxel", min: 0, max: 20, initial: 9, output: (n) => ({ values: [["VENTANA", `1 · 2 · 3 · ${n}`], ["MAX POOL", `${Math.max(1,2,3,n)}`], ["AVERAGE POOL", `${((6+n)/4).toFixed(2)}`]], observation: "Una ventana de cuatro valores puede resumirse de formas muy diferentes." }) },
+  "09.05": { label: "Corrección F(x) (décimas)", min: -20, max: 20, initial: -5, output: (n) => ({ values: [["ENTRADA x", "3"], ["SALIDA x+F(x)", `${(3+n/10).toFixed(1)}`]], observation: "Si F(x)=0, la ruta de identidad devuelve x." }) },
+  "09.06": { label: "Bloques descongelados de 8", min: 0, max: 8, initial: 2, output: (n) => ({ values: [["BLOQUES ENTRENABLES", `${n} / 8`], ["CABEZA NUEVA", "Entrenable en todos los casos"]], observation: "Modelo conceptual: congelar pesos no fija necesariamente estadísticas de normalización." }) },
+  "09.07": { label: "Canales de salida O", min: 4, max: 64, step: 4, initial: 32, output: (o) => { const standard=9*16*o, separable=9*16+16*o; return { values: [["ESTÁNDAR", `${standard} pesos`], ["DEPTHWISE + POINTWISE", `${separable} pesos`], ["REDUCCIÓN", `${Math.round(100*(1-separable/standard))}%`]], observation: "Ignora sesgos. Menos pesos no equivale siempre a menos latencia." }; } },
+  "09.08": { label: "Factor de reducción por eje", min: 1, max: 5, initial: 2, output: (n) => ({ values: [["POSICIONES ORIGINALES", "100%"], ["POSICIONES RESTANTES", `${(100/n**2).toFixed(1)}%`]], observation: "Estimación geométrica; el tiempo real depende también de canales, capas y hardware." }) },
+  "10.01": { label: "Umbral para etiquetas independientes (%)", min: 10, max: 90, step: 10, initial: 50, output: (n) => ({ values: [["SCORES PERSONA / BICICLETA", "0,7 / 0,6"], ["ETIQUETAS ACTIVAS", [0.7,0.6].filter(p=>p>=n/100).length.toString()]], observation: "Con dos sigmoid independientes pueden activarse cero, una o ambas." }) },
+  "10.02": { label: "Umbral (%)", min: 10, max: 90, step: 10, initial: 50, output: (n) => ({ values: [["SCORES", "0,1 · 0,3 · 0,5 · 0,7 · 0,9"], ["DECISIONES POSITIVAS", `${[.1,.3,.5,.7,.9].filter(p=>p>=n/100).length} de 5`]], observation: "El umbral cambia la decisión, no los scores ni las etiquetas reales." }) },
+  "10.03": { label: "Defectos omitidos FN de 10", min: 0, max: 10, initial: 2, output: (fn) => ({ values: [["TP / FN", `${10-fn} / ${fn}`], ["FP / TN", "9 / 81"], ["TOTAL", "100 piezas"]], observation: "Los positivos reales se mantienen en 10; FP y TN corresponden a 90 piezas buenas." }) },
+  "10.04": { label: "Falsas alarmas FP", min: 0, max: 20, initial: 2, output: (fp) => { const p=8/(8+fp), r=.8, f=2*p*r/(p+r); return { values: [["PRECISION", `${(100*p).toFixed(1)}%`], ["RECALL", "80,0%"], ["F1", `${(100*f).toFixed(1)}%`]], observation: "TP=8 y FN=2 se mantienen. Los TN no entran en F1." }; } },
+  "10.05": { label: "FPR (décimas de %)", min: 0, max: 50, initial: 10, output: (n) => ({ values: [["NEGATIVOS REALES", "100.000"], ["FPR", `${(n/10).toFixed(1)}%`], ["FALSAS ALARMAS", `${100*n}`]], observation: "Incluso una tasa pequeña puede producir muchos FP en una población grande." }) },
+  "10.06": { label: "Positivos observados entre 100", min: 0, max: 100, step: 5, initial: 40, output: (n) => ({ values: [["MEDIA PREDICHA", "80%"], ["FRECUENCIA OBSERVADA", `${n}%`], ["BRECHA ABSOLUTA", `${Math.abs(80-n)} puntos`]], observation: "Un único bin no describe toda la calibración; registra tamaños y repite en otros scores." }) },
+  "10.07": { label: "Coste por falso negativo", min: 1, max: 20, initial: 10, output: (n) => ({ values: [["FP / FN", "4 / 2"], ["COSTE TOTAL", `${4+2*n} unidades`]], observation: "Modelo de coste ilustrativo con coste FP=1; en producción acuerda unidades y consecuencias." }) },
+  "10.08": { label: "Influencia de marca espuria (%)", min: 0, max: 100, step: 10, initial: 40, output: (n) => ({ values: [["SEÑAL DEL OBJETO", "0,6"], ["APORTE DE MARCA", `${(n/100).toFixed(1)}`], ["SCORE DE JUGUETE", `${(0.6+n/100).toFixed(1)}`]], observation: "Si la puntuación cae al quitar la marca, hay una hipótesis de atajo que debe contrastarse con más datos." }) },
+  ...advancedProbes,
+  ...finalProbes,
+};
+
+export function StudyLab({ lessonId }: { lessonId: string }) {
+  const probe = probes[lessonId];
+  if (!probe) return <p className="lab-caption">Laboratorio en preparación para esta misión.</p>;
+  return <ProbeLab key={lessonId} probe={probe} lessonId={lessonId} />;
+}
+function ProbeLab({ probe, lessonId }: { probe: Probe; lessonId: string }) {
+  const [value, setValue] = useState(probe.initial);
+  const result = probe.output(value);
+  return <>
+    <div className="math-sliders"><div><Label htmlFor={`probe-${lessonId}`}>{probe.label}: {value}</Label><Slider id={`probe-${lessonId}`} min={probe.min} max={probe.max} step={probe.step ?? 1} value={[value]} onValueChange={([next])=>setValue(next)} /></div></div>
+    <div className="study-meter" role="img" aria-label={`${probe.label}: ${value} de ${probe.max}`}><span style={{ width: `${100*(value-probe.min)/(probe.max-probe.min)}%` }} /></div>
+    <div className="lab-readout lab-readout-grid">{result.values.map(([name, text])=><div key={name}><span>{name}</span><strong>{text}</strong></div>)}</div>
+    <p className="lab-caption">{result.observation}</p>
+  </>;
+}
