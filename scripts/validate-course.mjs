@@ -35,7 +35,7 @@ for (let sector=0; sector<names.length; sector++) {
     orderedIds.push(l.id);
     for(const key of ["title","navTitle","objective","lead","keyIdea","labTitle","labInstruction"])
       if(typeof l[key]!=="string" || !l[key].trim()) errors.push(`${id}: missing ${key}`);
-    if(l.sections?.length!==3 || l.sections.some(s=>!s.title || s.paragraphs?.length<1 || s.paragraphs.some(p=>!p.trim())) ||
+    if(!Array.isArray(l.sections) || l.sections.length<3 || l.sections.some(s=>!s.title || s.paragraphs?.length<1 || s.paragraphs.some(p=>!p.trim())) ||
        l.takeaways?.length<3 || l.sources?.length<1 || l.sources.some(s=>!s.label || !s.url.startsWith("https://")))
       errors.push(`${id}: incomplete lesson`);
     if(number>=11 && (!challenges[id]?.prompt || !challenges[id]?.check)) errors.push(`${id}: missing open case`);
