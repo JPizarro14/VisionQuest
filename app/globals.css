@@ -201,6 +201,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible {
 .display-controls button[data-state="on"] { background: #21343a; color: var(--amber-soft); }
 .route-trigger { margin-right: 8px; border-right: 1px solid #2a4046; border-radius: 0; }
 .route-trigger svg { color: var(--amber); }
+.practice-trigger { border: 1px solid #334e54; border-radius: 2px; margin-right: 6px; }
+.practice-trigger svg { color: var(--amber); }
 .type-controls { gap: 1px; }
 .font-meter { min-width: 42px; color: #8ea3a5; font-size: 0.67rem; text-align: center; }
 .focus-toggle { margin-left: 5px; border-color: #334e54; border-radius: 2px; font-size: 0.75rem; }
@@ -1724,7 +1726,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible {
   .brand { gap: 8px; }
   .brand-glyph { width: 34px; height: 34px; flex-basis: 34px; }
   .brand-name { font-size: 0.72rem; }
-  .brand-edition, .font-meter, .focus-toggle span, .route-trigger span { display: none; }
+  .brand-edition, .font-meter, .focus-toggle span, .route-trigger span, .practice-trigger span { display: none; }
+  .practice-trigger { margin-right: 2px; padding-inline: 8px; }
   .route-trigger { margin-right: 2px; padding-inline: 8px; }
   .focus-toggle { margin-left: 0; padding-inline: 8px; }
   .type-controls button { width: 31px; }

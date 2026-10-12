@@ -75,7 +75,7 @@ takeaways:["Explica supuestos.","Cuantifica unidades y coste.","Declara evidenci
 questions:[
 ["De 10 000 piezas, 2% son defectuosas. Con recall 90%, ¿cuántos defectos se omiten aproximadamente?",["20","200","180","9800"],0,["Correcto: 200 positivos · (1−0,90) = 20 falsos negativos.","200 es el total de positivos, antes de aplicar recall.","180 son los verdaderos positivos detectados.","9800 son las piezas buenas, no los defectos omitidos."]],
 ["Para 30 fps, intervalo entre frames...",["33,3 ms aprox.","30 ms exactos","250 ms","3,3 ms"],0,["Correcto: 1000/30.","Aproximación errónea.","Es presupuesto.","Sería 300 fps."]],
-["Evaluación más defendible...",["Split por lote/turno y test final congelado","Aleatoria por tile","Umbral ajustado en test","Solo una demo"],0,["Correcto: refleja dominio y evita fuga.","Fuga.","Sesgo.","Insuficiente."]]
+["Evaluación más defendible...",["Split por lote/turno y test final congelado","Aleatoria por tile","Umbral ajustado en test","Solo una demo"],0,["Correcto: refleja dominio y evita fuga.","Los tiles de la misma pieza/lote comparten origen; repartirlos entre train y test filtra información.","Ajustar el umbral con el test usa el conjunto final para seleccionar el modelo y sesga el resultado.","Una demo no estima falsos negativos ni variación entre lotes o turnos."]]
 ],labTitle:"Presupuesto de respuesta",labInstruction:"Cambia tiempo de inferencia y compáralo con 250 ms totales.",source:["NIST · AI Risk Management Framework","https://www.nist.gov/itl/ai-risk-management-framework"]
 }
 ];

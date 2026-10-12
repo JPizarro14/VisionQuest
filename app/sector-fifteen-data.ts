@@ -9,7 +9,7 @@ sections:[["Fuga de parentesco","Tiles hermanos comparten iluminación y textura
 takeaways:["Define grupo antes de dividir.","Partición refleja despliegue.","Test se consulta al final."],
 questions:[
 ["Dos tiles de una imagen fuente deben estar...",["En la misma partición","Uno en train y otro en test","Siempre en test","Solo en validación"],0,["Correcto: comparten origen.","Fuga probable.","No es necesario.","No es necesario."]],
-["Objetivo: generalizar a hospitales nuevos. Split más informativo...",["Por hospital","Por píxel","Aleatorio por tile","Por score"],0,["Correcto: deja instituciones enteras fuera.","No son muestras.","Fuga.","No corresponde."]],
+["Objetivo: generalizar a hospitales nuevos. Split más informativo...",["Por hospital","Por píxel","Aleatorio por tile","Por score"],0,["Correcto: deja instituciones enteras fuera.","No son muestras.","Los tiles del mismo hospital pueden caer en train y test; así no mides generalización a hospitales nuevos.","No corresponde."]],
 ["Elegir umbral mirando test repetidamente...",["Sesga estimación final","Asegura independencia","Repara anotaciones","No tiene efecto"],0,["Correcto: seleccionas sobre test.","No.","No.","Sí tiene efecto."]]
 ],labTitle:"Detecta fugas",labInstruction:"Varía el número de tiles hermanos que cruzan particiones.",source:["scikit-learn · GroupKFold","https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupKFold.html"]
 },

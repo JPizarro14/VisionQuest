@@ -75,7 +75,7 @@ takeaways:["Mide evento completo.","Latencia incluye cola.","Evalúa cámaras y 
 questions:[
 ["Diez detecciones del mismo ingreso deben contar como...",["Un evento según regla definida","Diez eventos siempre","Diez GT nuevos","Diez cámaras"],0,["Correcto: deduplica evento.","Duplicaría alarmas.","No.","No."]],
 ["Para plazo máximo, además de FPS medio mide...",["Latencia de extremo a extremo y percentiles","Solo parámetros","Solo loss","Solo IoU de una caja"],0,["Correcto: incluye cola y variabilidad.","No es plazo.","No es inferencia.","No basta."]],
-["Para nueva cámara, test ideal separa...",["Cámara o sesión de captura","Frames vecinos al azar","Píxeles alternos","Scores"],0,["Correcto: mide cambio de dominio.","Fuga.","No.","No."]]
+["Para nueva cámara, test ideal separa...",["Cámara o sesión de captura","Frames vecinos al azar","Píxeles alternos","Scores"],0,["Correcto: mide cambio de dominio.","Los frames vecinos comparten escena y condiciones; repartirlos entre train y test puede filtrar información.","Píxeles de una misma escena no son unidades independientes de evaluación.","Un score no identifica la cámara ni una sesión independiente."]]
 ],labTitle:"Presupuesto temporal",labInstruction:"Cambia cola de espera con captura e inferencia fijas.",source:["OpenCV · VideoCapture","https://docs.opencv.org/4.x/d8/dfe/classcv_1_1VideoCapture.html"]
 }
 ];

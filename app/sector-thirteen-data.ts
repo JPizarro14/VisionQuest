@@ -48,7 +48,7 @@ sections:[["Prompts","Un punto positivo indica región deseada; puntos negativos
 takeaways:["Prompt condiciona salida.","Candidato requiere verificación.","Mide ahorro y calidad."],
 questions:[
 ["Una caja prompt es...",["Una pista espacial para máscara","Siempre GT perfecto","Una métrica AP","Un batch"],0,["Correcto: condiciona salida.","Puede ser aproximada.","No es métrica.","No es lote."]],
-["¿Cómo validar en dominio nuevo?",["Máscaras GT representativas y protocolo","Solo una demo vistosa","Solo tamaño del modelo","Solo prompt más largo"],0,["Correcto: mide utilidad.","Insuficiente.","No garantiza.","No basta."]],
+["¿Cómo validar en dominio nuevo?",["Máscaras GT representativas y protocolo","Solo una demo vistosa","Solo tamaño del modelo","Solo prompt más largo"],0,["Correcto: mide utilidad.","Una demo elegida a mano no estima el rendimiento en una muestra representativa del dominio nuevo.","No garantiza.","No basta."]],
 ["Etiquetas generadas automáticamente para test sin revisar pueden...",["Sesgar evaluación","Asegurar independencia","Eliminar clases raras","Aumentar resolución"],0,["Correcto: se heredan errores.","No necesariamente.","No corrige cobertura.","No es resize."]]
 ],labTitle:"Corrige máscara",labInstruction:"Cambia falsos positivos de una máscara candidata de diez píxeles reales.",source:["Kirillov et al. · Segment Anything","https://arxiv.org/abs/2304.02643"]
 },
@@ -73,7 +73,7 @@ keyIdea:"Compara baseline congelado, cabeza entrenada y fine-tuning parcial bajo
 sections:[["Opciones","Extraer embeddings y entrenar cabeza es un baseline barato; descongelar más capas permite adaptar representación.","Tamaño de dataset, memoria y desplazamiento de dominio guían la elección."],["Validación","Fija preprocesamiento y datos de cada versión, informa múltiples semillas si la muestra es pequeña.","No mezcles tiles o fotogramas hermanos entre particiones."],["Decisión","No elijas por una décima de mAP sin intervalo, error por subgrupo y coste.","Recuerda licencias, origen del preentrenamiento y restricciones del caso."]],
 takeaways:["Compara baselines con mismo split.","Más entrenamiento aumenta coste.","Mide incertidumbre y subgrupos."],
 questions:[
-["Baseline razonable con pocos datos...",["Embeddings congelados más cabeza","Entrenar un ViT enorme desde cero siempre","Mezclar test en train","Solo mirar loss"],0,["Correcto: controla coste y fuga.","No siempre.","Fuga.","Falta métrica." ]],
+["Baseline razonable con pocos datos...",["Embeddings congelados más cabeza","Entrenar un ViT enorme desde cero siempre","Mezclar test en train","Solo mirar loss"],0,["Correcto: controla coste y fuga.","No siempre.","Incluir ejemplos de test en entrenamiento invalida una evaluación independiente y exagera el rendimiento.","Falta métrica." ]],
 ["Dos modelos en splits distintos se comparan limpiamente?",["No","Sí, siempre","Solo si son transformers","Solo con NMS"],0,["Correcto: cambia dificultad.","No.","No depende arquitectura.","No basta."]],
 ["Mejora mínima de AP justifica desplegar sin medir coste?",["No","Sí, siempre","Solo con zero-shot","Solo con 100 prompts"],0,["Correcto: hay restricciones reales.","No siempre.","No resuelve.","No resuelve."]]
 ],labTitle:"Compara coste",labInstruction:"Varía cantidad de capas entrenables de doce y observa un presupuesto conceptual.",source:["PyTorch · transfer learning tutorial","https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html"]

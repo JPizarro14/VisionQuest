@@ -103,7 +103,7 @@ const draft: DraftLesson[] = [
     ],
     takeaways:["Árbol = reglas condicionales sobre features.","La profundidad controla capacidad y fragilidad.","Un ensamble puede reducir variación, no inventar información."],
     questions:[
-      ["¿Qué indica una hoja de árbol?",["Un grupo de muestras con una predicción","Una coordenada de cámara","Un pixel individual siempre","Una convolución"],0,["Correcto: es el resultado de una secuencia de reglas.","Es otro modelo.","Puede incluir muchas muestras.","No es una operación de filtro."]],
+      ["¿Qué indica una hoja de árbol?",["Un grupo de muestras con una predicción","Una coordenada de cámara","Un pixel individual siempre","Una convolución"],0,["Correcto: es el resultado de una secuencia de reglas.","Una hoja agrupa muestras tras aplicar reglas; no representa una posición de la cámara.","Puede incluir muchas muestras.","No es una operación de filtro."]],
       ["Train casi perfecto y validación mala en un árbol muy profundo sugiere...",["Sobreajuste","Fuga arreglada","Que faltan más hojas","Accuracy perfecta en producción"],0,["Correcto: memorizó patrones particulares.","No se deduce que la fuga esté resuelta.","Más hojas suelen aumentar capacidad.","Validación advierte lo contrario."]],
       ["¿Qué aporta típicamente un random forest frente a un solo árbol?",["Agregación de árboles variados","Anotación automática perfecta","Profundidad física","IoU sin cajas"],0,["Correcto: promedia o vota para reducir variación.","Sigue necesitando datos etiquetados.","No mide 3D.","IoU requiere regiones."]],
     ], labTitle:"Profundidad y fragilidad", labInstruction:"Aumenta complejidad y compara error ilustrativo en train y validación.",

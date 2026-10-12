@@ -18,6 +18,7 @@ import {
   ScanLine,
   Sun,
   Terminal,
+  Target,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -285,6 +286,9 @@ export default function Home() {
         </div>
 
         <div className="display-controls" aria-label="Controles de lectura">
+          <Button asChild variant="ghost" size="sm" className="practice-trigger">
+            <a href="/practica" aria-label="Abrir entrenamiento"><Target aria-hidden="true" /> <span>Entrenamiento</span></a>
+          </Button>
           <Sheet open={routeOpen} onOpenChange={setRouteOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm" className="route-trigger">
@@ -543,7 +547,9 @@ export default function Home() {
                       </RadioGroup>
                       {submitted && chosenIndex !== undefined && (
                         <div className={`question-feedback ${correct ? "is-correct" : "is-wrong"}`} role="status">
-                          <strong>{correct ? "Bien razonado." : "Revisa la idea."}</strong> {question.feedback[chosenIndex]}
+                          <strong>{correct ? "Bien razonado." : "Por qué esta opción no es correcta:"}</strong> {question.feedback[chosenIndex]}
+                          {!correct && <p><strong>La respuesta correcta es «{question.options[question.correctIndex]}».</strong> {question.feedback[question.correctIndex]}</p>}
+                          {!correct && <p><strong>Idea clave:</strong> {lesson.keyIdea}</p>}
                         </div>
                       )}
                     </fieldset>
