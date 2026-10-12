@@ -81,6 +81,8 @@
 .practice-progress { height: 5px; margin: 12px 0 30px; background: #d8d4c9; }
 .practice-progress span { display: block; height: 100%; background: #b38640; transition: width .2s ease; }
 .practice-question h2 { max-width: 930px; margin: 14px 0 28px; font-size: clamp(1.35rem, 2.5vw, 2.05rem); line-height: 1.35; letter-spacing: -.025em; }
+.practice-code { max-width: 940px; margin: -8px 0 24px; padding: 20px 22px; overflow-x: auto; border: 1px solid #314d50; border-left: 4px solid #d4a352; background: #15262b; color: #f4f0e8; font-size: .9rem; line-height: 1.65; tab-size: 4; }
+.practice-code code { font-family: var(--font-mono), ui-monospace, monospace; white-space: pre; }
 .practice-options { display: grid; gap: 10px; max-width: 940px; margin: 0 0 24px; padding: 0; border: 0; }
 .practice-options label { display: flex; align-items: flex-start; gap: 13px; min-height: 55px; padding: 14px 16px; border: 1px solid #c4c5ba; background: #fffdf7; color: #253033; cursor: pointer; line-height: 1.5; }
 .practice-options label:hover:not([data-result]) { border-color: #648c87; background: #f5faf4; }

@@ -7,7 +7,7 @@ import { practiceCounts, practiceItems } from "@/app/practice-bank";
 import type { PracticeItem } from "@/app/practice-types";
 import "./practice.css";
 
-type PracticeMode = "mixto" | "test" | "abiertas" | "casos" | "errores";
+type PracticeMode = "mixto" | "test" | "codigo" | "abiertas" | "casos" | "errores";
 type HistoryEntry = { attempts: number; mistakes: number; needsReview: boolean };
 type History = Record<string, HistoryEntry>;
 const historyKey = "visionquest-practice-history-v1";
@@ -25,14 +25,14 @@ function shuffled<T>(items: T[]): T[] {
 function chooseSession(items: PracticeItem[], count: number): PracticeItem[] {
   const groups = new Map<string, PracticeItem[]>();
   for (const item of items) {
-    const key = item.kind === "choice" ? item.category :
+    const key = item.kind === "choice" ? item.code ? "codigo" : item.category :
       item.category === "codigo" || item.category === "caso" ? "caso" : "abierta";
     groups.set(key, [...(groups.get(key) ?? []), item]);
   }
   for (const [key, group] of groups) groups.set(key, shuffled(group));
   const selected: PracticeItem[] = [], usedFamilies = new Set<string>();
   const usedIds = new Set<string>();
-  const pattern = ["concepto", "calculo", "abierta", "caso", "concepto", "calculo", "abierta", "abierta"];
+  const pattern = ["concepto", "calculo", "codigo", "abierta", "caso", "concepto", "calculo", "codigo", "abierta", "abierta"];
   // First pass: at most one numerical variant of each family.
   while (selected.length < count) {
     let added = false;
@@ -86,6 +86,7 @@ export default function PracticePage() {
     (sector === "todos" || item.lessonId.startsWith(sector + ".")) &&
     (mode === "mixto" || mode === "errores" ||
       (mode === "test" && item.kind === "choice") ||
+      (mode === "codigo" && item.kind === "choice" && !!item.code) ||
       (mode === "abiertas" && item.kind === "open" && item.category !== "caso") ||
       (mode === "casos" && item.kind === "open" && item.category === "caso")) &&
     (mode !== "errores" || history[item.id]?.needsReview)
@@ -144,7 +145,7 @@ export default function PracticePage() {
         <div className="practice-heading">
           <span className="practice-eyebrow"><Target aria-hidden="true" /> ESTACIÓN DE ENTRENAMIENTO</span>
           <h1>Practica hasta poder explicarlo.</h1>
-          <p>Preguntas de todo el curso, cálculos con datos cambiantes y casos para defender tus decisiones. Tu respuesta importa tanto como el acierto.</p>
+          <p>Preguntas de todo el curso, cálculos con datos cambiantes, lectura y revisión de código, y casos para defender tus decisiones. Tu respuesta importa tanto como el acierto.</p>
         </div>
         <div className="practice-stats" aria-label="Contenido y progreso">
           <div><strong>{practiceCounts.total.toLocaleString("es-ES")}</strong><span>ejercicios disponibles</span></div>
@@ -157,7 +158,7 @@ export default function PracticePage() {
           <div>
             <span className="practice-eyebrow">CONFIGURA UNA RONDA</span>
             <h2 id="practice-setup">Tu sesión de práctica</h2>
-            <p>Las variantes numéricas cambian los datos. En una ronda se priorizan problemas diferentes antes de repetir una familia.</p>
+            <p>Las variantes numéricas cambian los datos. También hay {practiceCounts.codeChoices} retos de código con cuatro opciones; en una ronda se priorizan problemas diferentes antes de repetir una familia.</p>
           </div>
           <div className="practice-filters">
             <label htmlFor="practice-sector">Sector
@@ -170,6 +171,7 @@ export default function PracticePage() {
               <select id="practice-mode" value={mode} onChange={event => setMode(event.target.value as PracticeMode)}>
                 <option value="mixto">Mixto · entrevista</option>
                 <option value="test">Tipo test</option>
+                <option value="codigo">Leer y revisar código</option>
                 <option value="abiertas">Explicar y aplicar</option>
                 <option value="casos">Casos prácticos</option>
                 <option value="errores">Repasar mis errores</option>
@@ -195,8 +197,9 @@ export default function PracticePage() {
             <strong>{index + 1} / {session.length}</strong>
           </div>
           <div className="practice-progress"><span style={{ width: ((index + 1) / session.length * 100) + "%" }} /></div>
-          <span className="practice-eyebrow">{active.kind === "choice" ? active.category === "calculo" ? "CÁLCULO RAZONADO" : "PREGUNTA TIPO TEST" : active.category === "caso" ? "CASO DE ENTREVISTA" : active.category === "codigo" ? "CÓDIGO Y DEPURACIÓN" : "EXPLICA Y APLICA"}</span>
+          <span className="practice-eyebrow">{active.kind === "choice" ? active.category === "calculo" ? "CÁLCULO RAZONADO" : active.category === "lectura-codigo" ? "LEE EL CÓDIGO" : active.category === "revisar-codigo" ? "REVISA Y CORRIGE" : "PREGUNTA TIPO TEST" : active.category === "caso" ? "CASO DE ENTREVISTA" : active.category === "codigo" ? "CÓDIGO Y DEPURACIÓN" : "EXPLICA Y APLICA"}</span>
           <h2 id="practice-prompt">{active.prompt}</h2>
+          {active.kind === "choice" && active.code && <pre className="practice-code"><code>{active.code}</code></pre>}
 
           {active.kind === "choice" ? <>
             <fieldset className="practice-options" disabled={revealed}>

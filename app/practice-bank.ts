@@ -2,6 +2,7 @@ import { allLessons } from "@/app/course-map";
 import { practiceChallenges } from "@/app/practice-challenges";
 import { numericalPractice } from "@/app/practice-numerical";
 import { curatedPractice } from "@/app/practice-curated";
+import { codePractice } from "@/app/practice-code-choice";
 import type { PracticeChoice, PracticeItem, PracticeOpen } from "@/app/practice-types";
 
 const courseChoices: PracticeChoice[] = allLessons.flatMap((lesson) =>
@@ -46,7 +47,7 @@ const transferCases: PracticeOpen[] = Object.entries(practiceChallenges).map(([l
 }));
 
 export const practiceItems: PracticeItem[] = [
-  ...courseChoices, ...numericalPractice, ...oralPractice, ...transferCases, ...curatedPractice,
+  ...courseChoices, ...numericalPractice, ...oralPractice, ...transferCases, ...curatedPractice, ...codePractice,
 ];
 
 export const practiceCounts = {
@@ -55,5 +56,6 @@ export const practiceCounts = {
   oral: oralPractice.length,
   cases: transferCases.length,
   curated: curatedPractice.length,
+  codeChoices: codePractice.length,
   total: practiceItems.length,
 };

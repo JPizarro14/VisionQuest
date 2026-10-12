@@ -3,7 +3,8 @@ export type PracticeChoice = {
   id: string;
   lessonId: string;
   family?: string;
-  category: "concepto" | "calculo";
+  category: "concepto" | "calculo" | "lectura-codigo" | "revisar-codigo";
+  code?: string;
   prompt: string;
   options: string[];
   correctIndex: number;
