@@ -62,6 +62,7 @@ export default function PracticePage() {
   const [loaded, setLoaded] = useState(false);
   const [sector, setSector] = useState("todos");
   const [mode, setMode] = useState<PracticeMode>("mixto");
+  const [unseenOnly, setUnseenOnly] = useState(false);
   const [amount, setAmount] = useState(10);
   const [session, setSession] = useState<PracticeItem[]>([]);
   const [index, setIndex] = useState(0);
@@ -82,15 +83,29 @@ export default function PracticePage() {
     if (loaded) window.localStorage.setItem(historyKey, JSON.stringify(history));
   }, [history, loaded]);
 
-  const candidates = useMemo(() => practiceItems.filter(item =>
-    (sector === "todos" || item.lessonId.startsWith(sector + ".")) &&
-    (mode === "mixto" || mode === "errores" ||
-      (mode === "test" && item.kind === "choice") ||
-      (mode === "codigo" && item.kind === "choice" && !!item.code) ||
-      (mode === "abiertas" && item.kind === "open" && item.category !== "caso") ||
-      (mode === "casos" && item.kind === "open" && item.category === "caso")) &&
-    (mode !== "errores" || history[item.id]?.needsReview)
-  ), [sector, mode, history]);
+  const candidates = useMemo(() => {
+    const practicedFamilies = new Set(practiceItems.flatMap(item =>
+      item.kind === "choice" && item.family && history[item.id]?.attempts ? [item.family] : []));
+    const offeredFamilies = new Set<string>();
+    return practiceItems.filter(item => {
+      if (sector !== "todos" && !item.lessonId.startsWith(sector + ".")) return false;
+      if (!(mode === "mixto" || mode === "errores" ||
+        (mode === "test" && item.kind === "choice") ||
+        (mode === "codigo" && item.kind === "choice" && !!item.code) ||
+        (mode === "abiertas" && item.kind === "open" && item.category !== "caso") ||
+        (mode === "casos" && item.kind === "open" && item.category === "caso"))) return false;
+      if (mode === "errores" && !history[item.id]?.needsReview) return false;
+      if (unseenOnly && mode !== "errores") {
+        if (history[item.id]?.attempts) return false;
+        // Forty variants of one calculation are one skill in a sector pass.
+        if (item.kind === "choice" && item.family) {
+          if (practicedFamilies.has(item.family) || offeredFamilies.has(item.family)) return false;
+          offeredFamilies.add(item.family);
+        }
+      }
+      return true;
+    });
+  }, [sector, mode, history, unseenOnly]);
   const pending = Object.values(history).filter(entry => entry?.needsReview).length;
   const practiced = Object.values(history).filter(entry => entry?.attempts > 0).length;
   const active = session[index];
@@ -183,12 +198,19 @@ export default function PracticePage() {
               </select>
             </label>
           </div>
+          {mode !== "errores" && <label className="practice-unseen">
+            <input type="checkbox" checked={unseenOnly} onChange={event => setUnseenOnly(event.target.checked)} />
+            Solo ejercicios no vistos, sin repetir entre rondas
+          </label>}
+          {unseenOnly && mode !== "errores" && <p className="practice-unseen-note">Cada familia de cálculo cuenta una vez en este recorrido. Puedes desactivar esta opción para practicar otras variantes.</p>}
           <div className="practice-start">
-            <span>{candidates.length.toLocaleString("es-ES")} disponibles con estos filtros</span>
+            <span>{candidates.length.toLocaleString("es-ES")} {unseenOnly && mode !== "errores" ? "ejercicios distintos sin responder" : "disponibles"} con estos filtros</span>
             <button type="button" onClick={start} disabled={!candidates.length}>Empezar ronda <ArrowRight aria-hidden="true" /></button>
           </div>
           {mode === "errores" && candidates.length === 0 &&
             <p className="practice-empty">Todavía no hay errores pendientes en este sector. Puedes empezar una ronda mixta.</p>}
+          {unseenOnly && mode !== "errores" && candidates.length === 0 &&
+            <p className="practice-empty">Ya has visto todos los ejercicios distintos con estos filtros. Puedes repasar errores o desactivar esta opción para practicar de nuevo.</p>}
         </section>
 
         {active && <section className="practice-panel practice-question" aria-labelledby="practice-prompt" key={active.id}>

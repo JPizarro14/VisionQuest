@@ -54,6 +54,9 @@
   font-weight: 600;
   letter-spacing: 0;
 }
+.practice-unseen { display: flex; align-items: center; gap: 10px; width: fit-content; margin: -4px 0 18px; color: #35484a; font-size: .86rem; font-weight: 700; cursor: pointer; }
+.practice-unseen input { width: 18px; height: 18px; margin: 0; accent-color: #356c68; }
+.practice-config .practice-unseen-note { margin: -8px 0 18px; font-size: .8rem; }
 .practice-start { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 18px; border-top: 1px solid #c9c4b9; }
 .practice-start span { color: #596668; letter-spacing: 0; }
 .practice-start button, .practice-primary, .practice-next {
