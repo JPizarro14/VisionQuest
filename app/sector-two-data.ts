@@ -157,8 +157,8 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Aplicación real: modificar canales RGB",
         paragraphs: [
           "Una imagen RGB suele tener shape (H, W, C), con H = Height (alto), W = Width (ancho) y C = Channels (canales); en RGB, C = 3 (Red, Green, Blue). Si sumamos el vector [20, 10, 0] de shape (3,), aumentamos conceptualmente 20 el rojo y 10 el verde de cada píxel, sin cambiar el azul.",
-          "NumPy alinea (H, W, 3) con (1, 1, 3). El vector se aplica a todos los H × W píxeles y el resultado mantiene shape (H, W, 3). En código: ajuste = np.array([20, 10, 0]); resultado = imagen + ajuste.",
-          "Cuidado: las imágenes uint8 almacenan valores de 0 a 255. Para evitar desbordamientos, convierte primero a un tipo entero más amplio, suma, limita con np.clip(resultado, 0, 255) y después vuelve a uint8. Además, OpenCV suele cargar imágenes en orden BGR, no RGB: el orden de canales del ajuste debe corresponderse con el de la imagen.",
+          "NumPy alinea (H, W, 3) con (1, 1, 3). El vector se aplica a todos los H × W píxeles y el resultado mantiene shape (H, W, 3). Para una imagen RGB uint8: ajuste = np.array([20, 10, 0], dtype=np.int16); resultado = np.clip(imagen.astype(np.int16) + ajuste, 0, 255).astype(np.uint8).",
+          "Las imágenes uint8 almacenan valores de 0 a 255: convierte a un tipo más amplio antes de sumar, limita el resultado y después recupera uint8. Además, OpenCV suele cargar imágenes en orden BGR, no RGB: el orden de canales del ajuste debe corresponderse con el de la imagen.",
         ],
         formula: {
           label: "BROADCASTING EN COMPUTER VISION",
@@ -497,7 +497,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Rango: cuánta información independiente queda",
         paragraphs: [
           "El rango de una matriz es el número de filas o columnas linealmente independientes. Si una columna es combinación de otras, no aporta una dirección nueva.",
-          "Una matriz de 3 × 3 puede tener rango 2: ocupa tres ejes en memoria, pero sus transformaciones viven realmente en un subespacio de dos dimensiones.",
+          "Una matriz de shape (3, 3) puede tener rango 2: tiene tres filas y tres columnas, pero sus columnas solo generan un subespacio de dimensión dos.",
         ],
       },
       {

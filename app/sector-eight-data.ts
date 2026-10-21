@@ -4,7 +4,7 @@ const draft: DraftLesson[] = [
     id:"08.01",navTitle:"Batch y épocas",title:"Cuántas veces ve el modelo los datos",
     objective:"Calcular pasos por época y distinguir lote, época y actualización.",
     lead:"No es igual procesar 1.000 imágenes de una vez que hacerlo en lotes de 20; cambia cuántos pasos da el optimizador.",
-    keyIdea:"Una época recorre las muestras de train; con N ejemplos y lote B, hay aproximadamente ceil(N/B) lotes y normalmente una actualización por lote.",
+    keyIdea:"En un recorrido de train sin reemplazo y sin drop_last, N ejemplos con lote B dan ceil(N/B) lotes. Las actualizaciones dependen también de la acumulación de gradientes.",
     sections:[
       ["La unidad de trabajo","Un batch contiene muestras procesadas juntas. Con N=100 y B=32, hay cuatro batches: tres de 32 y uno de 4 si no se descarta el último.","Una época no implica un número fijo de actualizaciones sin conocer batch, drop_last y acumulación de gradientes."],
       ["Gradiente de lote","Cada lote estima un gradiente sobre sus muestras. Un lote pequeño introduce variabilidad; uno grande consume más memoria y cambia la dinámica.","Acumular gradientes puede simular un lote efectivo mayor, pero hay detalles de normalización y capas dependientes del batch."],

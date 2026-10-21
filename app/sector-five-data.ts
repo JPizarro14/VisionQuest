@@ -30,16 +30,16 @@ function lesson(d: Draft): SectorLesson {
 
 export const sectorFiveLessons: SectorLesson[] = [
   lesson({
-    id: "05.01", navTitle: "Transformaciones afines", title: "Mover puntos sin perder las rectas",
+    id: "05.01", navTitle: "Transformaciones afines", title: "Mover puntos con una regla afín",
     objective: "Distinguir traslación, escala, rotación y transformación afín de una deformación cualquiera.",
     lead: "Un punto cambia de sitio cuando movemos la cámara, giramos una foto o corregimos una inclinación. En vez de moverlo a ojo, describimos la regla que transforma todas las coordenadas.",
-    keyIdea: "Una transformación afín 2D aplica una parte lineal y una traslación: conserva rectas y paralelismo, pero no necesariamente longitudes ni ángulos.",
+    keyIdea: "Una transformación afín 2D aplica una parte lineal y una traslación. Si es invertible, conserva rectas y paralelismo, pero no necesariamente longitudes ni ángulos.",
     sections: [
       ["La regla para cada punto", "Escribe un punto como (x, y). Una matriz 2×2 puede girarlo, escalarlo o inclinarlo; después sumamos un desplazamiento (tx, ty). En OpenCV, warpAffine utiliza una matriz 2×3 para reunir ambos pasos.", "Si solo añades (3, −2), el punto (2, 4) va a (5, 2). El orden de las operaciones importa: trasladar y luego girar alrededor del origen no suele producir el mismo resultado que girar y luego trasladar."],
-      ["Qué se conserva", "Rectas siguen siendo rectas y las que eran paralelas siguen paralelas. Una escala distinta en x e y puede deformar círculos en elipses y cambiar ángulos.", "Una corrección de perspectiva general no es afín: en la imagen de una vía, las líneas paralelas del mundo pueden encontrarse visualmente en un punto de fuga."],
+      ["Qué se conserva", "Si la parte lineal es invertible, las rectas siguen siendo rectas y las que eran paralelas siguen paralelas. Una transformación degenerada puede colapsar una recta en un punto. Una escala distinta en x e y puede deformar círculos en elipses y cambiar ángulos.", "Una corrección de perspectiva general no es afín: en la imagen de una vía, las líneas paralelas del mundo pueden encontrarse visualmente en un punto de fuga."],
       ["Transformar píxeles exige interpolar", "La fórmula transforma coordenadas continuas, pero la salida es una rejilla discreta. Para asignar intensidades a posiciones entre píxeles hace falta interpolación y una política para los bordes.", "Conviene registrar también el tamaño de salida y la convención de coordenadas; una transformación geométrica no garantiza que todo el contenido siga dentro del lienzo."],
     ],
-    takeaways: ["Afín = parte lineal + traslación.", "Conserva rectas y paralelismo, no toda la geometría.", "El orden y el centro de transformación cambian el resultado."],
+    takeaways: ["Afín = parte lineal + traslación.", "Si es invertible, conserva rectas y paralelismo, pero no toda la geometría.", "El orden y el centro de transformación cambian el resultado."],
     questions: [
       ["Trasladas (2, 4) mediante (3, −2). ¿Dónde queda?", ["(5, 2)", "(−1, 6)", "(6, 8)", "(2, 4)"], 0, ["Correcto: suma componente a componente.", "Eso resta el desplazamiento.", "No se multiplican las coordenadas.", "La traslación no es la identidad."]],
       ["¿Qué propiedad conserva toda transformación afín invertible?", ["Longitud", "Ángulos", "Paralelismo", "Área exacta"], 2, ["Una escala cambia longitudes.", "Un shear cambia ángulos.", "Correcto: las rectas paralelas continúan paralelas.", "El determinante puede cambiar el área."]],

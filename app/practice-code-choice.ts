@@ -194,7 +194,7 @@ export const codePractice: PracticeChoice[] = [
     ["tp, fp, fn = 8, 2, 4", "precision = tp / (tp + fp)", "print(precision)"],
     [
       ["0.67", "8/12 corresponde al recall, pues el denominador de recall es TP+FN."],
-      ["0.80", "Correcto: precisión = 8/(8+2) = 0,8; FN no interviene en ese denominador."],
+      ["0.8", "Correcto: Python imprime 0.8 porque 8/(8+2) = 0,8; FN no interviene en ese denominador."],
       ["0.50", "Ese resultado no corresponde a 8 verdaderos positivos de 10 predicciones positivas."],
       ["1.00", "Los dos falsos positivos reducen la precisión por debajo de 1."],
     ], 1),
