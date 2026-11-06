@@ -873,7 +873,7 @@ export const sectorFourLessons: SectorLesson[] = [
         title: "Una CDF por barrio",
         paragraphs: [
           "La imagen se divide en teselas. Cada una construye su histograma y su CDF, de modo que una zona oscura no queda gobernada por millones de píxeles de otra zona brillante.",
-          "Teselas más pequeñas adaptan el contraste a variaciones rápidas, pero tienen menos muestras, son más sensibles al ruido y pueden generar aspecto local exagerado. El parámetro tileGridSize expresa cuántas teselas usa OpenCV, no el tamaño de cada píxel de la tesela.",
+          "Teselas más pequeñas adaptan el contraste a variaciones rápidas, pero tienen menos muestras, son más sensibles al ruido y pueden generar aspecto local exagerado. El parámetro tileGridSize expresa el número de teselas por eje que usa OpenCV, no el tamaño en píxeles de cada tesela.",
         ],
       },
       {

@@ -103,6 +103,7 @@
 .practice-why-right > span { color: #2d6a54; }
 .practice-feedback svg { width: 18px; height: 18px; }
 .practice-feedback p { margin: 8px 0 0; color: #293638; }
+.practice-solution { white-space: pre-wrap; overflow-wrap: anywhere; }
 .practice-rubric { border-color: #b38640; background: #f6ead0; }
 .practice-rubric ul { margin: 8px 0 0; padding-left: 20px; }
 .practice-rubric li { margin-top: 5px; }

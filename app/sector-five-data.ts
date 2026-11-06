@@ -52,7 +52,7 @@ export const sectorFiveLessons: SectorLesson[] = [
     id: "05.02", navTitle: "Remuestreo e interpolación", title: "Crear una rejilla nueva con datos antiguos",
     objective: "Elegir nearest o bilineal según si remuestras intensidades o etiquetas.",
     lead: "Al ampliar una imagen, aparecen posiciones nuevas que no tenían una medida original. Hay que decidir qué valor les asignamos, y esa decisión puede inventar colores que nunca estuvieron en la máscara.",
-    keyIdea: "Nearest toma una muestra existente; bilineal combina cuatro vecinas. Una máscara de clases se remuestrea normalmente con nearest para no mezclar identificadores.",
+    keyIdea: "Remuestrear es calcular los valores de una nueva rejilla de píxeles. Nearest toma una muestra existente; bilineal combina cuatro vecinas. Una máscara de clases se remuestrea normalmente con nearest para no mezclar identificadores.",
     sections: [
       ["Dos preguntas distintas", "Nearest selecciona el píxel más próximo y conserva sus valores exactos. Bilineal interpola horizontal y verticalmente entre cuatro muestras y da una transición suave.", "Para una foto, bilineal suele ser razonable al ampliar. Si una máscara guarda clase 0 y clase 2, un promedio puede crear el valor 1, una clase inexistente en esa frontera."],
       ["Al reducir, el aliasing importa", "Reducir no es simplemente tirar filas y columnas: patrones finos pueden convertirse en texturas falsas o desaparecer. Un filtro previo de paso bajo atenúa frecuencias que la nueva rejilla no puede representar.", "En OpenCV INTER_AREA suele ser una elección útil para reducir, pero la mejor opción depende de la tarea y la escala. Valida la señal pequeña que deseas conservar."],

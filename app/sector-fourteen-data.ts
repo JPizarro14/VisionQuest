@@ -43,7 +43,7 @@ questions:[
 id:"14.04",navTitle:"Cámara y proyección",title:"Del punto 3D al píxel",
 objective:"Interpretar intrínsecos, profundidad y coordenadas de cámara.",
 lead:"El punto 3D no se proyecta igual sin conocer parámetros y pose de la cámara.",
-keyIdea:"En un modelo pinhole sin distorsión, para un punto en coordenadas de cámara con Z>0, x_img=f_x X/Z+c_x; la profundidad Z cambia la escala aparente.",
+keyIdea:"En un modelo pinhole sin distorsión, para un punto en coordenadas de cámara con Z>0, x_img=f_x X/Z+c_x e y_img=f_y Y/Z+c_y; la profundidad Z cambia la escala aparente.",
 sections:[["Intrínsecos","f_x y f_y expresan focal en píxeles; c_x,c_y fijan punto principal.","La distorsión de lente requiere calibración o corrección si es relevante."],["Extrínsecos","Rotación y traslación transforman coordenadas del mundo a cámara según convención.","No mezcles metros del mundo con píxeles de imagen."],["Ambigüedad","Una sola proyección 2D no fija distancia métrica Z sin información adicional.","Conoce unidades, convención de ejes y margen de error."]],
 takeaways:["Proyección divide por Z.","Calibración fija parámetros.","Una foto no fija escala absoluta."],
 questions:[
@@ -74,7 +74,7 @@ sections:[["Evento","Define inicio, fin, tolerancia temporal y duplicado de aler
 takeaways:["Mide evento completo.","Latencia incluye cola.","Evalúa cámaras y condiciones nuevas."],
 questions:[
 ["Diez detecciones del mismo ingreso deben contar como...",["Un evento según regla definida","Diez eventos siempre","Diez GT nuevos","Diez cámaras"],0,["Correcto: deduplica evento.","Duplicaría alarmas.","No.","No."]],
-["Para plazo máximo, además de FPS medio mide...",["Latencia de extremo a extremo y percentiles","Solo parámetros","Solo loss","Solo IoU de una caja"],0,["Correcto: incluye cola y variabilidad.","No es plazo.","No es inferencia.","No basta."]],
+["Para comprobar un plazo de latencia p95, ¿qué medirías además de FPS medio?",["Latencia de extremo a extremo y percentiles","Solo parámetros","Solo loss","Solo IoU de una caja"],0,["Correcto: calcula p95 sobre latencias completas por solicitud, incluyendo cola y variabilidad; un percentil no garantiza un máximo absoluto.","El número de parámetros no mide el tiempo por solicitud.","La pérdida evalúa un objetivo de aprendizaje, no el plazo de respuesta.","IoU de una caja mide geometría, no latencia."]],
 ["Para nueva cámara, test ideal separa...",["Cámara o sesión de captura","Frames vecinos al azar","Píxeles alternos","Scores"],0,["Correcto: mide cambio de dominio.","Los frames vecinos comparten escena y condiciones; repartirlos entre train y test puede filtrar información.","Píxeles de una misma escena no son unidades independientes de evaluación.","Un score no identifica la cámara ni una sesión independiente."]]
 ],labTitle:"Presupuesto temporal",labInstruction:"Cambia cola de espera con captura e inferencia fijas.",source:["OpenCV · VideoCapture","https://docs.opencv.org/4.x/d8/dfe/classcv_1_1VideoCapture.html"]
 }

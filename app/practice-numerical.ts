@@ -20,7 +20,7 @@ const ratio = (a: number, b: number) => a + "/" + b;
 export const numericalPractice: PracticeChoice[] = [
   ...range(v => {
     const h = 90 + v, w = 200 + 2 * v;
-    return q("pixels", "01.02", v, "Una imagen de H = " + h + " (Height/alto) y W = " + w + " (Width/ancho) tiene ¿cuántos píxeles?",
+    return q("pixels", "01.02", v, "Una imagen tiene H = " + h + " (Height/alto) y W = " + w + " (Width/ancho). ¿Cuántos píxeles contiene?",
       h * w, "Cuenta filas por columnas: H × W.",
       [h + w, "Sumar dimensiones no cuenta celdas de la rejilla."],
       [h * w * 3, "Eso cuenta valores de tres canales RGB, no píxeles."],
@@ -94,7 +94,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   ...range(v => {
     const patients = 4 + v;
-    return q("split-groups", "06.02", v, patients + " pacientes aportan 5 imágenes cada uno. Para evitar fuga entre train y test, ¿cuántas unidades independientes hay como máximo?",
+    return q("split-groups", "06.02", v, patients + " pacientes aportan 5 imágenes cada uno. Si todas las imágenes de una persona deben permanecer juntas, ¿cuántos grupos distintos por paciente hay?",
       patients, "Agrupa todas las imágenes de cada paciente antes de dividir.",
       [patients * 5, "Es el número de imágenes, pero cinco comparten el mismo paciente."],
       [patients + 1, "No existe un grupo adicional: la unidad independiente es cada paciente."],
@@ -136,7 +136,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   ...range(v => {
     const n = 31 + 2 * v, output = 16 + v;
-    return q("conv-output", "09.02", v, "Eje de tamaño " + n + ", kernel 3, padding 1 y stride 2. ¿Tamaño de salida de la convolución?",
+    return q("conv-output", "09.02", v, "Eje de tamaño " + n + ", kernel 3, padding 1 y stride 2, sin dilatación. ¿Tamaño de salida de la convolución?",
       output, "floor((N + 2p − k)/s) + 1.",
       [output - 1, "Has omitido el padding o la última posición válida."],
       [n, "El stride 2 reduce la resolución."],
@@ -233,7 +233,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   ...range(v => {
     const people = 12 + v;
-    return q("independent-units", "15.01", v, people + " pacientes tienen 6 imágenes cada uno. ¿Cuántas unidades independientes debes considerar para un split por paciente?",
+    return q("independent-units", "15.01", v, people + " pacientes tienen 6 imágenes cada uno. ¿Cuántos grupos distintos hay si divides por paciente y mantienes juntas sus imágenes?",
       people, "Mantén las seis imágenes de una persona en el mismo grupo.",
       [people * 6, "Eso cuenta imágenes correlacionadas como si fueran pacientes diferentes."],
       [6, "Es el número de imágenes por paciente, no el número de grupos."],

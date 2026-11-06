@@ -44,7 +44,7 @@ const draft: DraftLesson[] = [
     lead:"Una capa transforma un vector en otro; sus tamaños tienen que encajar antes de que comience el entrenamiento.",
     keyIdea:"Linear(F,O) lleva (N,F) a (N,O) y contiene O·F pesos más O sesgos si bias está activado; aquí O es el número de salidas.",
     sections:[
-      ["Shapes","Un lote N×F atraviesa una capa F→O y sale N×O. En PyTorch el peso se almacena con forma (O,F).","Con F=4 y O=3 hay 12 pesos y 3 sesgos. La siguiente capa debe aceptar tres features."],
+      ["Shapes","Un lote N×F atraviesa una capa F→O y sale N×O: por ejemplo, Linear(4,3) transforma (8,4) en (8,3). En PyTorch el peso se almacena con forma (O,F).","Con F=4 y O=3 hay 12 pesos y 3 sesgos, 15 parámetros en total. La siguiente capa debe aceptar tres features."],
       ["Composición","Alternar mezclas lineales y activaciones construye representaciones más expresivas.","Más profundidad aumenta capacidad y coste, pero no garantiza generalización."],
       ["Aplanar una imagen","Una imagen con shape (H, W, C), donde H = Height (alto), W = Width (ancho) y C = Channels (canales), puede convertirse en un vector de H·W·C valores. Se conservan los valores, pero el eje ya no expresa vecindad 2D.","Las capas densas crecen rápidamente con resolución; las CNN comparten filtros locales."]
     ],

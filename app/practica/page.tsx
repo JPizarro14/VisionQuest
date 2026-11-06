@@ -254,7 +254,7 @@ export default function PracticePage() {
               Comparar con la solución orientativa
             </button>}
             {revealed && <div className="practice-feedback" role="status">
-              <div className="practice-why-right"><span><BookOpen aria-hidden="true" /> Solución orientativa</span><p>{active.solution}</p></div>
+              <div className="practice-why-right"><span><BookOpen aria-hidden="true" /> Solución orientativa</span><p className="practice-solution">{active.solution}</p></div>
               <div className="practice-rubric"><strong>Comprueba si has incluido:</strong><ul>{active.rubric.map(point => <li key={point}>{point}</li>)}</ul></div>
               <p className="practice-honesty">Las respuestas abiertas se revisan contigo; la aplicación no interpreta tu texto ni finge corregirlo automáticamente.</p>
               {!evaluated && <div className="practice-self-check">

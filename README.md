@@ -96,6 +96,21 @@ Los sectores se desbloquean secuencialmente al superar las misiones anteriores c
 
 El [guion maestro](docs/GUIÓN_MAESTRO.md) detalla los temas y prácticas de cada sector. Incluye ROI y Otsu en las misiones actuales, tiles con solapamiento y rejilla desplazada en el Sector 05, e IoU para cajas en el Sector 11 y máscaras en el Sector 12. El [plan de estudio](docs/PLAN_ESTUDIO.md) fija un ritmo inicial y sus dependencias hasta diciembre de 2026.
 
+## Entrenamiento
+
+La estación de entrenamiento (`/practica`) reúne 2.567 ejercicios: 429 preguntas del curso, 1.440 variantes de 36 problemas numéricos, 576 preguntas de razonamiento, 50 casos abiertos, 36 ejercicios abiertos de código o diseño y 36 preguntas de lectura o revisión de código.
+
+Las preguntas de razonamiento están redactadas por misión y sección: preguntan conceptos, comparaciones o situaciones concretas, en lugar de convertir automáticamente títulos y objetivos en enunciados. Las soluciones de entrevista incluyen la explicación desarrollada y sus convenciones; las de sección corresponden a su contenido. Sus identificadores se mantienen para conservar el historial local.
+
+Para validar el contenido y las respuestas calculadas:
+
+```bash
+pnpm run validate:course
+node scripts/validate-practice.mjs
+```
+
+El validador de práctica comprueba cobertura, identificadores, opciones, feedback, correspondencia entre preguntas y soluciones y las respuestas de las 1.440 variantes numéricas a partir de los datos de sus enunciados. Incluye regresiones específicas para forma y coordenadas (01.02) y la elección de RGB bajo cambios de iluminación (01.05). Estas comprobaciones no sustituyen la revisión editorial del contenido.
+
 ## Tecnologías
 
 - Next.js 16 y React 19
@@ -144,6 +159,9 @@ app/
   detection-labs.tsx Laboratorios de IoU, NMS y tiles
   mask-iou-lab.tsx Máscara interactiva de IoU y Dice
   practice-challenges.ts Casos abiertos de los Sectores 11–18
+  practice-reasoning.ts Preguntas explícitas de entrevista y por sección
+  practice-bank.ts     Catálogo de ejercicios y soluciones de entrenamiento
+  practica/           Rondas de práctica y autocorrección con historial local
   course-map.ts      Mapa de sectores y catálogo de lecciones
   lesson-labs.tsx    Laboratorios de fundamentos visuales
   math-labs.tsx      Doce laboratorios matemáticos
