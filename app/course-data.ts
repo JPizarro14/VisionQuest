@@ -195,13 +195,13 @@ export const sectorOneLessons: SectorLesson[] = [
         title: "El origen está arriba a la izquierda",
         paragraphs: [
           "En la representación habitual de una imagen, el píxel (0, 0) está en la esquina superior izquierda. x crece hacia la derecha y y crece hacia abajo.",
-          "La notación gráfica suele escribir (x, y), pero NumPy y OpenCV indexan la matriz como imagen[y, x]. No es una contradicción: una notación habla de coordenadas y la otra de fila y columna.",
+          "La notación gráfica suele escribir (x, y), pero NumPy y OpenCV indexan la matriz como imagen[y, x]. Por ejemplo, el píxel (x=5, y=2) se consulta con imagen[2, 5]: fila 2, columna 5. No es una contradicción: una notación habla de coordenadas y la otra de fila y columna.",
         ],
       },
       {
         title: "Dimensión no significa última coordenada",
         paragraphs: [
-          "Si una imagen mide 640 × 480 en la convención ancho × alto, W = 640 columnas y H = 480 filas. En NumPy la shape espacial es (H, W) = (480, 640). Como empezamos a contar en cero, la última coordenada válida es x = 639, y = 479.",
+          "Si una imagen RGB mide 640 × 480 en la convención ancho × alto, W = 640 columnas y H = 480 filas. En NumPy la shape espacial es (H, W) = (480, 640) y la shape completa es (480, 640, 3). Como empezamos a contar en cero, la última coordenada válida (x, y) es (639, 479).",
           "Este detalle explica muchos errores de tipo off-by-one al recortar regiones o comprobar límites.",
         ],
         formula: {
