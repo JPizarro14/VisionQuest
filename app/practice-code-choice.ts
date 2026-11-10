@@ -28,7 +28,7 @@ export const codePractice: PracticeChoice[] = [
       ["(4, 6, 3)", "El recorte sí modifica las dos primeras dimensiones; únicamente conserva la dimensión de canales."],
     ], 0),
   question("01-review", "01.02", "revisar-codigo",
-    "Se quiere extraer una caja xyxy=(x1,y1,x2,y2), con límites superiores exclusivos, de una imagen H×W×C. ¿Está bien implementado?",
+    "Se quiere extraer una caja xyxy=(x1,y1,x2,y2) de una imagen H×W×C. ¿Está bien implementado?",
     ["roi = image[x1:x2, y1:y2]"],
     [
       ["Sí; NumPy usa primero x y después y.", "NumPy indexa primero las filas (y), después las columnas (x)."],
@@ -161,7 +161,7 @@ export const codePractice: PracticeChoice[] = [
       ["101", "Eso sería un paso por muestra con batch de tamaño 1."],
     ], 2),
   question("08-review", "08.03", "revisar-codigo",
-    "Se quiere medir de forma estable la validación de un clasificador, pero el loop aplica un flip aleatorio a las imágenes. ¿Está bien planteado?",
+    "Se quiere medir validación de forma estable mientras se aplica una augmentación aleatoria. ¿Está bien el loop?",
     ["for x, y in val_loader:", "    x = random_flip(x)", "    logits = model(x)", "    update_metric(logits, y)"],
     [
       ["Sí; aplicar la misma augmentación al validar siempre mejora la estimación.", "Un cambio aleatorio durante validación altera cada medida; la política de evaluación debe estar fijada."],

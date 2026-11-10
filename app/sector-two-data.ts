@@ -258,7 +258,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Dónde aparece en Computer Vision",
         paragraphs: [
           "Las distancias comparan embeddings, asocian detecciones entre fotogramas, miden errores de coordenadas y ayudan a recuperar imágenes similares.",
-          "No existe una distancia universalmente mejor. L2 da más peso relativo a los componentes grandes al sumar sus cuadrados antes de tomar la raíz; L1 suma diferencias absolutas. Esto no significa que el valor numérico de L2 sea mayor que L1: para el mismo vector, L2 es menor o igual que L1. La decisión depende de qué error quieras penalizar.",
+          "No existe una distancia universalmente mejor. L2 castiga con más fuerza diferencias grandes; L1 suele responder de forma menos extrema ante valores alejados. La decisión depende de qué error quieras penalizar.",
         ],
       },
     ],
@@ -1025,7 +1025,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Exponentiales que desbordan",
         paragraphs: [
           "exp(1000) supera fácilmente el rango de muchos tipos float. En softmax podemos restar el máximo de todos los logits antes de exponenciar; la distribución resultante no cambia.",
-          "log-sum-exp aplica esta idea: si m = max(xᵢ), log(∑ exp(xᵢ)) = m + log(∑ exp(xᵢ − m)). Se resta m antes de exponenciar y se suma fuera del logaritmo para conservar el resultado.",
+          "log-sum-exp aplica esta idea para calcular log(∑ exp(xᵢ)) de forma estable.",
         ],
       },
       {

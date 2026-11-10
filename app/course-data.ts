@@ -195,13 +195,13 @@ export const sectorOneLessons: SectorLesson[] = [
         title: "El origen está arriba a la izquierda",
         paragraphs: [
           "En la representación habitual de una imagen, el píxel (0, 0) está en la esquina superior izquierda. x crece hacia la derecha y y crece hacia abajo.",
-          "La notación gráfica suele escribir (x, y), pero NumPy y OpenCV indexan la matriz como imagen[y, x]. Por ejemplo, el píxel (x=5, y=2) se consulta con imagen[2, 5]: fila 2, columna 5. No es una contradicción: una notación habla de coordenadas y la otra de fila y columna.",
+          "La notación gráfica suele escribir (x, y), pero NumPy y OpenCV indexan la matriz como imagen[y, x]. No es una contradicción: una notación habla de coordenadas y la otra de fila y columna.",
         ],
       },
       {
         title: "Dimensión no significa última coordenada",
         paragraphs: [
-          "Si una imagen mide 640 × 480 en la convención ancho × alto, W = 640 columnas y H = 480 filas. En NumPy la shape espacial es (H, W) = (480, 640); si es RGB con canales al final, su shape completa es (480, 640, 3). Como empezamos a contar en cero, la última coordenada válida (x, y) es (639, 479).",
+          "Si una imagen mide 640 × 480 en la convención ancho × alto, W = 640 columnas y H = 480 filas. En NumPy la shape espacial es (H, W) = (480, 640). Como empezamos a contar en cero, la última coordenada válida es x = 639, y = 479.",
           "Este detalle explica muchos errores de tipo off-by-one al recortar regiones o comprobar límites.",
         ],
         formula: {
@@ -558,7 +558,7 @@ export const sectorOneLessons: SectorLesson[] = [
         title: "Aliasing: aparecen patrones que no estaban",
         paragraphs: [
           "Si reduces una textura fina sin filtrar, varias estructuras diferentes pueden producir las mismas muestras. El resultado puede mostrar dientes, parpadeos o patrones moiré falsos.",
-          "Por eso, al reducir, suele aplicarse antes o durante el remuestreo un filtro paso bajo o anti-aliasing. Suaviza detalle demasiado fino para la nueva rejilla y reduce el riesgo de que se convierta en patrones engañosos.",
+          "Por eso, al reducir, suele aplicarse antes un filtro paso bajo o anti-aliasing. Suaviza detalle demasiado fino para la nueva rejilla y evita que se convierta en información engañosa.",
         ],
       },
     ],
@@ -624,7 +624,7 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "De HWC a CHW",
         paragraphs: [
-          "NumPy y OpenCV suelen representar una imagen de color con shape (H, W, C): Height (alto), Width (ancho), Channels (canales). Muchos modelos de PyTorch reciben (C, H, W). Para pasar de HWC a CHW se usa transpose(2, 0, 1) en NumPy o permute(2, 0, 1) en PyTorch. Los valores son los mismos, pero los ejes se reordenan con una permutación; no basta con hacer reshape.",
+          "NumPy y OpenCV suelen representar una imagen de color con shape (H, W, C): Height (alto), Width (ancho), Channels (canales). Muchos modelos de PyTorch reciben (C, H, W). Los valores son los mismos, pero los ejes se reordenan con una permutación; no basta con hacer reshape.",
           "reshape no sustituye a permute: reshape conserva el recorrido lineal de los valores y puede mezclar píxeles con canales si se usa para intercambiar ejes.",
         ],
       },

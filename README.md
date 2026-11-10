@@ -98,7 +98,11 @@ El [guion maestro](docs/GUIÓN_MAESTRO.md) detalla los temas y prácticas de cad
 
 ## Entrenamiento
 
-La estación de entrenamiento (`/practica`) reúne 2.567 ejercicios: 429 preguntas del curso, 1.440 variantes de 36 problemas numéricos, 576 preguntas de razonamiento, 50 casos abiertos, 36 ejercicios abiertos de código o diseño y 36 preguntas de lectura o revisión de código.
+La estación de entrenamiento (`/practica`) reúne 1.163 ejercicios: 429 preguntas del curso, 36 problemas numéricos sin variantes repetidas, 576 preguntas de razonamiento, 50 casos abiertos, 36 ejercicios abiertos de código o diseño y 36 preguntas de lectura o revisión de código.
+
+El formato **Estudiar tema completo** está seleccionado por defecto y presenta todas las preguntas del sector elegido, de todos los formatos e incluidas las ya practicadas, en orden aleatorio y sin un límite de ronda. Requiere seleccionar un sector concreto. Cada respuesta debe comprobarse o compararse y autoevaluarse antes de pasar a la siguiente.
+
+Al empezar, la configuración y las estadísticas se sustituyen por una pantalla centrada en el test. Puedes volver a configurar otra sesión sin perder las respuestas ya registradas. El historial de las antiguas variantes numéricas se agrupa en el ejercicio que permanece, conservando intentos, fallos y necesidades de repaso.
 
 Las preguntas de razonamiento están redactadas por misión y sección: preguntan conceptos, comparaciones o situaciones concretas, en lugar de convertir automáticamente títulos y objetivos en enunciados. Las soluciones de entrevista incluyen la explicación desarrollada y sus convenciones; las de sección corresponden a su contenido. Sus identificadores se mantienen para conservar el historial local.
 
@@ -109,7 +113,7 @@ pnpm run validate:course
 node scripts/validate-practice.mjs
 ```
 
-El validador de práctica comprueba cobertura, identificadores, opciones, feedback, correspondencia entre preguntas y soluciones y las respuestas de las 1.440 variantes numéricas a partir de los datos de sus enunciados. Incluye regresiones específicas para forma y coordenadas (01.02) y la elección de RGB bajo cambios de iluminación (01.05). Estas comprobaciones no sustituyen la revisión editorial del contenido.
+El validador de práctica comprueba cobertura, identificadores, opciones, feedback, correspondencia entre preguntas y soluciones y las respuestas de los 36 problemas numéricos a partir de los datos de sus enunciados. También verifica los recorridos completos de los 18 sectores, los filtros de las rondas y la migración del historial de variantes eliminadas. Incluye regresiones específicas para forma y coordenadas (01.02) y la elección de RGB bajo cambios de iluminación (01.05). Estas comprobaciones no sustituyen la revisión editorial del contenido.
 
 ## Tecnologías
 

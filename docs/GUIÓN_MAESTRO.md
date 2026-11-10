@@ -9,7 +9,6 @@ Actualizado el 28 de septiembre de 2026. Este documento es el mapa de los **18 s
 3. Tres preguntas de razonamiento, con distractores verosímiles y explicación individual para cada opción; dominio 3/3 sin penalización por repetir.
 4. Fuente técnica primaria, caso límite y, en los sectores avanzados, transferencia a una situación distinta de las preguntas cerradas.
 5. No alterar identificadores ya publicados ni borrar el progreso o los apuntes existentes.
-6. En entrenamiento, redactar preguntas concretas que indiquen qué explicar, comparar o resolver. No usar un título o un objetivo como sustituto del enunciado ni exigir ejemplos o matices ajenos a lo preguntado. La solución debe cubrir todas las partes solicitadas y declarar las unidades y convenciones necesarias.
 
 **Estado del contenido:** sectores 01–18 implementados (143 misiones). El desbloqueo en el sitio sigue siendo secuencial por dominio, no por fecha de publicación. Los sectores 11–18 tienen 50 laboratorios y 50 casos abiertos.
 

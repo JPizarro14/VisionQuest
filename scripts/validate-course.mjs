@@ -10,7 +10,7 @@ const challenges = (await import(dataUrl(fs.readFileSync("app/practice-challenge
 const studyWeeks = (await import(dataUrl(fs.readFileSync("app/study-plan.ts","utf8")))).studyWeeks;
 const advanced = (await import(dataUrl(fs.readFileSync("app/advanced-probes.ts","utf8")))).advancedProbes;
 const final = (await import(dataUrl(fs.readFileSync("app/final-probes.ts","utf8")))).finalProbes;
-const studySource = fs.readFileSync("app/study-labs.tsx","utf8").replace(/\r\n/g, "\n");
+const studySource = fs.readFileSync("app/study-labs.tsx","utf8");
 const localProbeCode = studySource.slice(studySource.indexOf("const probes:"),studySource.indexOf("\n\nexport function StudyLab"))
   .replace("const probes: Record<string, Probe> =", "export const localProbes =")
   .replace(/  \.\.\.(advancedProbes|finalProbes),\n/g, "");

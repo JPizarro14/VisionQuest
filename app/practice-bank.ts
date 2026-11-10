@@ -63,7 +63,7 @@ export const practiceItems: PracticeItem[] = [
 
 export const practiceCounts = {
   courseChoices: courseChoices.length,
-  numericalVariants: numericalPractice.length,
+  numerical: numericalPractice.length,
   oral: oralPractice.length,
   cases: transferCases.length,
   curated: curatedPractice.length,

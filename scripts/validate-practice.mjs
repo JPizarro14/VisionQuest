@@ -35,6 +35,9 @@ const bankSource = file("app/practice-bank.ts")
   .replace('"@/app/practice-reasoning"', '"' + reasoningUrl + '"')
   .replace('"@/app/practice-types"', '"' + typesUrl + '"');
 const { practiceItems, practiceCounts } = await import(dataUrl(bankSource));
+const {
+  createPracticeSession, getPracticeCandidates, PracticeHistoryError, restorePracticeHistory,
+} = await import(dataUrl(file("app/practice-session.ts")));
 const ids = new Set(), prompts = new Set(), familyCounts = new Map();
 const errors = [];
 const numbers = (prompt, pattern) => {
@@ -262,20 +265,80 @@ for (const [id, expected] of [
   if (item?.kind !== "open" || expected.some(answer => !item.solution.includes(answer)))
     errors.push("Incomplete worked answer " + id);
 }
-if (familyCounts.size !== 36 || [...familyCounts.values()].some(count => count !== 40))
-  errors.push("Expected 36 numerical families with 40 variants each");
-if (practiceCounts.total !== practiceItems.length || practiceCounts.courseChoices !== 429 ||
-    practiceCounts.numericalVariants !== 1440 || practiceCounts.cases !== 50 ||
+if (familyCounts.size !== 36 || [...familyCounts.values()].some(count => count !== 1))
+  errors.push("Expected one representative exercise for each of the 36 numerical families");
+if (practiceCounts.total !== 1163 || practiceCounts.total !== practiceItems.length || practiceCounts.courseChoices !== 429 ||
+    practiceCounts.numerical !== 36 || practiceCounts.cases !== 50 ||
     practiceCounts.curated !== 36 || practiceCounts.codeChoices !== 36 ||
     practiceCounts.oral !== lessons.length + lessons.reduce((count, lesson) => count + lesson.sections.length, 0))
   errors.push("Unexpected practice counts " + JSON.stringify(practiceCounts));
+const sectorCounts = [55, 94, 90, 90, 76, 62, 62, 62, 62, 62, 70, 54, 54, 54, 54, 54, 54, 54];
 for (let n = 1; n <= 18; n++) {
+  const sector = String(n).padStart(2, "0");
   const prefix = String(n).padStart(2, "0") + ".";
   for (const category of ["lectura-codigo", "revisar-codigo"]) {
     if (practiceItems.filter(item => item.lessonId.startsWith(prefix) && item.category === category).length !== 1)
       errors.push("Missing or duplicate code format " + prefix + category);
   }
+  const expected = practiceItems.filter(item => item.lessonId.startsWith(prefix));
+  if (expected.length !== sectorCounts[n - 1])
+    errors.push("Unexpected deduplicated sector count " + sector + ": " + expected.length);
+  const practiced = Object.fromEntries(expected.map(item => [
+    item.id, { attempts: 1, mistakes: 0, needsReview: false },
+  ]));
+  const complete = getPracticeCandidates(practiceItems, sector, "tema", practiced, true);
+  const random = Math.random;
+  let session;
+  try {
+    Math.random = () => 0;
+    session = createPracticeSession(complete, "tema", 10);
+  } finally {
+    Math.random = random;
+  }
+  const sessionIds = new Set(session.map(item => item.id));
+  if (session.length !== expected.length || sessionIds.size !== expected.length ||
+      expected.some(item => !sessionIds.has(item.id)) ||
+      session.every((item, index) => item.id === expected[index].id))
+    errors.push("Complete-topic session must shuffle every exercise exactly once: " + sector);
+  if (getPracticeCandidates(practiceItems, sector, "mixto", practiced, true).length)
+    errors.push("Unseen rounds must exclude practiced exercises: " + sector);
+  const round = createPracticeSession(expected, "mixto", 10);
+  if (round.length !== 10 || new Set(round.map(item => item.id)).size !== 10)
+    errors.push("Ordinary rounds must retain their size without duplicates: " + sector);
 }
+if (getPracticeCandidates(practiceItems, "todos", "tema", {}, false).length)
+  errors.push("Complete-topic study requires a specific sector");
+const previousHistory = {
+  "calc-pixels-1": { attempts: 1, mistakes: 0, needsReview: false },
+  "calc-pixels-17": { attempts: 2, mistakes: 1, needsReview: false },
+  "calc-pixels-40": { attempts: 1, mistakes: 1, needsReview: true },
+  [practiceItems[0].id]: { attempts: 3, mistakes: 1, needsReview: false },
+};
+const restored = restorePracticeHistory(previousHistory, practiceItems);
+if (restored["calc-pixels-1"]?.attempts !== 4 || restored["calc-pixels-1"]?.mistakes !== 2 ||
+    !restored["calc-pixels-1"]?.needsReview || restored["calc-pixels-17"] || restored["calc-pixels-40"] ||
+    restored[practiceItems[0].id]?.attempts !== 3 || !previousHistory["calc-pixels-17"])
+  errors.push("Legacy numerical history must merge attempts and unresolved errors without mutating its input");
+if (getPracticeCandidates(practiceItems, "01", "mixto", restored, true).some(item => item.id === "calc-pixels-1") ||
+    !getPracticeCandidates(practiceItems, "01", "errores", restored, true).some(item => item.id === "calc-pixels-1"))
+  errors.push("Migrated numerical progress must remain seen and available for error review");
+for (const mode of ["test", "codigo", "abiertas", "casos"]) {
+  const candidates = getPracticeCandidates(practiceItems, "01", mode, {}, false);
+  if (!candidates.length || candidates.some(item =>
+    mode === "test" ? item.kind !== "choice" :
+    mode === "codigo" ? item.kind !== "choice" || !item.code :
+    mode === "abiertas" ? item.kind !== "open" || item.category === "caso" :
+    item.kind !== "open" || item.category !== "caso"))
+    errors.push("Existing practice format must retain its filter: " + mode);
+}
+let invalidHistoryRejected = false;
+try {
+  restorePracticeHistory({ "calc-pixels-1": { attempts: "1", mistakes: 0, needsReview: false } }, practiceItems);
+} catch (error) {
+  if (!(error instanceof PracticeHistoryError)) throw error;
+  invalidHistoryRejected = true;
+}
+if (!invalidHistoryRejected) errors.push("Invalid stored progress must report an explicit history error");
 if (errors.length) { console.error(errors.join("\n")); process.exitCode = 1; }
 else console.log("Práctica OK: " + practiceCounts.total + " ejercicios, " + familyCounts.size +
   " familias numéricas con respuestas comprobadas, " + practiceCounts.oral + " preguntas de razonamiento, " +
