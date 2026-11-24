@@ -12,7 +12,23 @@ El recorrido está pensado para desarrollar tres capacidades:
 2. elegir datos, operaciones, arquitecturas, métricas e infraestructura con criterio;
 3. defender esas decisiones en una entrevista técnica o ante un equipo de ingeniería.
 
-## Estado del proyecto
+## Empezar: estudiar por etapas
+
+La portada (`/`) presenta **el ciclo de vida de un sistema de inspección** con dos recorridos distintos: seguir una imagen hasta la decisión y seguir un lote durante el aprendizaje. El camino principal consta de siete etapas:
+
+1. Capturar el detalle y representar la imagen como datos.
+2. Etiquetar, explorar y separar un dataset fiable.
+3. Preparar la entrada y elegir filtros (con comparador visual de contraste y mediana).
+4. Pasar del tensor a la predicción (incluye comparar *softmax* y sigmoides con los mismos logits).
+5. Calcular la pérdida y el gradiente; elegir optimizador, tasa y duración.
+6. Evaluar y decidir con métricas, probabilidades y costes.
+7. Desplegar, medir y vigilar el sistema real.
+
+Cada etapa (`/etapas/<id>`) tiene cuatro pasos: **Estudiar → Comprender → Mis apuntes → Test**. Las fichas de decisiones explican el mecanismo, un caso concreto, el límite y cómo comparar alternativas. Para avanzar hay que autocorregir el caso de transferencia y acertar las tres preguntas; se puede repasar y reintentar. Los apuntes son opcionales y se guardan automáticamente en este navegador. El progreso del nuevo cuaderno no modifica el historial de práctica ni las notas clásicas.
+
+La estación de observación en pixel art enmarca la portada y las etapas. El mapa agrupa el recorrido en tres tramos: **Preparar la señal**, **Construir el modelo** y **Decidir y operar**. El texto de estudio se lee en un panel independiente de la ilustración, en modo cálido u oscuro.
+
+## Biblioteca de consulta (ruta clásica)
 
 La versión actual contiene los dieciocho sectores del guion:
 
@@ -45,8 +61,8 @@ Incluye:
 - 143 microlaboratorios manipulables, uno por misión;
 - 429 preguntas con explicación específica para cada opción;
 - 50 casos abiertos de transferencia con pauta de autocorrección en los sectores 11–18;
-- desbloqueo secuencial con criterio de dominio de 3/3 por misión;
-- desbloqueo de cada sector al dominar el anterior;
+- acceso libre a los 18 sectores en `/biblioteca`, también por enlace directo `/biblioteca?leccion=04.11`;
+- registro secuencial del dominio clásico con 3/3 por misión, sin bloquear la consulta;
 - guardado local del progreso y migración automática desde las versiones anteriores;
 - cuaderno de apuntes personales sin modificar el contenido verificado;
 - modo de lectura cálido y oscuro;
@@ -59,7 +75,7 @@ El identificador del despliegue privado en ChatGPT Sites no se incluye en este r
 
 ## Método de aprendizaje
 
-Cada lección seguirá la misma secuencia:
+Cada lección de la biblioteca sigue la secuencia clásica:
 
 1. **Intuición:** explicación sencilla y ejemplo cotidiano.
 2. **Concepto:** definición rigurosa sin complejidad innecesaria.
@@ -92,7 +108,7 @@ El temario está dividido en 18 sectores progresivos:
 17. Arquitectura de sistemas de Computer Vision
 18. Entrevistas técnicas
 
-Los sectores se desbloquean secuencialmente al superar las misiones anteriores con 3/3. Los casos abiertos se autocorrigen; el 3/3 automático no comprueba por sí solo dominio a largo plazo.
+Las misiones clásicas se pueden consultar en cualquier orden. Su registro de dominio se conserva en orden secuencial. Los casos abiertos se autocorrigen; el 3/3 automático no comprueba por sí solo dominio a largo plazo.
 
 El [guion maestro](docs/GUIÓN_MAESTRO.md) detalla los temas y prácticas de cada sector. Incluye ROI y Otsu en las misiones actuales, tiles con solapamiento y rejilla desplazada en el Sector 05, e IoU para cajas en el Sector 11 y máscaras en el Sector 12. El [plan de estudio](docs/PLAN_ESTUDIO.md) fija un ritmo inicial y sus dependencias hasta diciembre de 2026.
 
@@ -174,7 +190,9 @@ app/
   geometry-labs.tsx Diez laboratorios de geometría y teselas
   globals.css        Tema visual y diseño responsive
   layout.tsx         Metadatos y estructura raíz
-  page.tsx           Navegación, progreso, evaluaciones y apuntes
+  (ruta)/            Portada, marco compartido y páginas por etapa del cuaderno
+  etapas/            Contenido, decisiones, casos, progreso y lectores del itinerario
+  biblioteca/        Lector de consulta con los laboratorios y apuntes clásicos
 components/ui/       Componentes de interfaz reutilizables
 public/              Icono y arte visual del proyecto
 ```
@@ -185,7 +203,7 @@ En esta primera versión, los apuntes, las preferencias de lectura y el progreso
 
 ## Alcance actual
 
-El recorrido y sus 18 sectores están implementados. El progreso y los apuntes son locales por navegador, y los casos abiertos dependen de autocorrección; no hay sincronización ni repetición espaciada automática. El [plan de estudio](docs/PLAN_ESTUDIO.md) indica cómo repasar y estimar la fecha de finalización.
+El recorrido principal tiene siete etapas; los 18 sectores son una biblioteca complementaria. No hay sincronización ni repetición espaciada automática. El [plan de estudio clásico](docs/PLAN_ESTUDIO.md) se conserva para quienes prefieran repasar por misiones.
 
 ## Arte
 

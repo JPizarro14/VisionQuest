@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Image from "next/image";
+import Link from "@/components/document-link";
 import {
   ArrowRight,
   BookOpen,
@@ -10,7 +11,6 @@ import {
   CircleCheckBig,
   ExternalLink,
   Focus,
-  LockKeyhole,
   Map,
   Moon,
   PencilLine,
@@ -101,7 +101,7 @@ function readCompletedLessons() {
   }
 }
 
-export default function Home() {
+export default function LibraryPage() {
   const [readingTheme, setReadingTheme] = useState<"warm" | "dark">("warm");
   const [fontScale, setFontScale] = useState(100);
   const [focusMode, setFocusMode] = useState(false);
@@ -160,10 +160,10 @@ export default function Home() {
       const storedCompleted = readCompletedLessons();
       const storedTheme = window.localStorage.getItem("visionquest-reading-theme");
       const storedActive = window.localStorage.getItem(activeLessonKey);
-      const storedIndex = allLessons.findIndex((item) => item.id === storedActive);
+      const requested = new URLSearchParams(window.location.search).get("leccion");
+      const storedIndex = allLessons.findIndex((item) => item.id === (requested ?? storedActive));
       const furthestUnlocked = Math.min(storedCompleted.length, allLessons.length - 1);
-      const nextIndex =
-        storedIndex >= 0 && storedIndex <= furthestUnlocked ? storedIndex : furthestUnlocked;
+      const nextIndex = storedIndex >= 0 ? storedIndex : furthestUnlocked;
 
       setCompletedIds(storedCompleted);
       if (storedTheme === "dark" || storedTheme === "warm") setReadingTheme(storedTheme);
@@ -216,8 +216,7 @@ export default function Home() {
   }
 
   function selectLesson(index: number, scroll = true) {
-    const unlocked = index <= completedIds.length;
-    if (!unlocked || index < 0 || index >= allLessons.length) return;
+    if (index < 0 || index >= allLessons.length) return;
 
     setActiveLessonIndex(index);
     setActiveTab("lesson");
@@ -226,6 +225,9 @@ export default function Home() {
     setAnswers({});
     setSubmitted(false);
     window.localStorage.setItem(activeLessonKey, allLessons[index].id);
+    const url = new URL(window.location.href);
+    url.searchParams.set("leccion", allLessons[index].id);
+    window.history.replaceState(window.history.state, "", url);
     if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -233,7 +235,6 @@ export default function Home() {
     const sector = availableSectors[index];
     if (!sector) return;
     const start = sectorStartIndex(sector.id);
-    if (start > completedIds.length) return;
 
     const firstPending = sector.lessons.findIndex((item) => !completedIds.includes(item.id));
     const localIndex = firstPending >= 0 ? firstPending : sector.lessons.length - 1;
@@ -250,7 +251,7 @@ export default function Home() {
     if (!allAnswered) return;
     setSubmitted(true);
 
-    if (score === lesson.questions.length) {
+    if (score === lesson.questions.length && activeLessonIndex === completedIds.length) {
       setCompletedIds((current) => {
         const completedThrough = Math.max(current.length, activeLessonIndex + 1);
         const next = allLessons.slice(0, completedThrough).map((item) => item.id);
@@ -271,11 +272,11 @@ export default function Home() {
       style={studyStyle}
     >
       <header className="command-bar">
-        <div className="brand" aria-label="VisionQuest">
+        <Link className="brand" href="/" aria-label="Volver a Estudiar por etapas">
           <span className="brand-glyph" aria-hidden="true">VQ</span>
           <span className="brand-name">VISIONQUEST</span>
-          <span className="brand-edition">FIELD NOTES / {activeSector.id}</span>
-        </div>
+          <span className="brand-edition">← ETAPAS</span>
+        </Link>
 
         <div className="course-progress" aria-label="Progreso del sector">
           <div className="progress-copy">
@@ -292,15 +293,15 @@ export default function Home() {
           <Sheet open={routeOpen} onOpenChange={setRouteOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm" className="route-trigger">
-                <Map aria-hidden="true" /> <span>Ruta</span>
+                <Map aria-hidden="true" /> <span>Biblioteca</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="route-sheet">
               <SheetHeader className="route-header">
                 <span className="route-kicker">PLAN MAESTRO</span>
-                <SheetTitle>Ruta de Computer Vision</SheetTitle>
+                <SheetTitle>Biblioteca de consulta</SheetTitle>
                 <SheetDescription>
-                  De los píxeles a la arquitectura de sistemas y las entrevistas técnicas.
+                  Abre cualquier sector. Las misiones y los apuntes anteriores son independientes del recorrido por etapas.
                 </SheetDescription>
               </SheetHeader>
               <div className="route-meter">
@@ -327,8 +328,6 @@ export default function Home() {
               <nav className="sector-list" aria-label="Sectores del curso">
                 {sectorTitles.map((sectorTitle, index) => {
                   const availableSector = availableSectors[index];
-                  const start = availableSector ? sectorStartIndex(availableSector.id) : -1;
-                  const unlocked = availableSector !== undefined && start <= completedIds.length;
                   const complete =
                     availableSector !== undefined &&
                     availableSector.lessons.every((item) => completedIds.includes(item.id));
@@ -337,16 +336,13 @@ export default function Home() {
                     ? "DOMINADO"
                     : active
                       ? "EN CURSO"
-                      : unlocked
-                        ? "DISPONIBLE"
-                      : "BLOQUEADO";
+                      : "CONSULTAR";
                   return (
                     <button
                       key={sectorTitle}
                       type="button"
                       className={`sector-node ${active ? "is-active" : ""} ${complete ? "is-complete" : ""}`}
                       aria-current={active ? "step" : undefined}
-                      disabled={!unlocked}
                       onClick={() => selectSector(index)}
                     >
                       <span className="sector-index">{String(index + 1).padStart(2, "0")}</span>
@@ -354,7 +350,7 @@ export default function Home() {
                         <strong>{sectorTitle}</strong>
                         <small>{status}</small>
                       </span>
-                      {complete ? <CircleCheckBig aria-hidden="true" /> : unlocked ? <ChevronRight aria-hidden="true" /> : <LockKeyhole aria-hidden="true" />}
+                      {complete ? <CircleCheckBig aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
                     </button>
                   );
                 })}
@@ -405,19 +401,17 @@ export default function Home() {
               const globalIndex = activeSectorStart + index;
               const complete = completedIds.includes(item.id);
               const current = item.id === lesson.id;
-              const unlocked = globalIndex <= completedIds.length;
               return (
                 <button
                   key={item.id}
                   type="button"
-                  className={`lesson-node ${current ? "is-current" : ""} ${complete ? "is-complete" : ""} ${!unlocked ? "is-locked" : ""}`}
+                  className={`lesson-node ${current ? "is-current" : ""} ${complete ? "is-complete" : ""}`}
                   aria-current={current ? "step" : undefined}
-                  aria-label={`${item.id}: ${item.navTitle}${complete ? ", superada" : !unlocked ? ", bloqueada" : ""}`}
-                  disabled={!unlocked}
+                  aria-label={`${item.id}: ${item.navTitle}${complete ? ", superada" : ""}`}
                   onClick={() => selectLesson(globalIndex, false)}
                 >
                   <span className="lesson-node-marker">
-                    {complete ? <Check aria-hidden="true" /> : !unlocked ? <LockKeyhole aria-hidden="true" /> : String(index + 1).padStart(2, "0")}
+                    {complete ? <Check aria-hidden="true" /> : String(index + 1).padStart(2, "0")}
                   </span>
                   <span><small>{item.id}</small><strong>{item.navTitle}</strong></span>
                 </button>
@@ -501,7 +495,7 @@ export default function Home() {
               <div className="checkpoint-intro">
                 <span className="eyebrow">PRUEBA DE DOMINIO · {lesson.id}</span>
                 <h2 id="quiz-title">Demuestra que puedes razonarlo</h2>
-                <p>No basta con reconocer una frase. Responde las tres preguntas correctamente para desbloquear la siguiente misión.</p>
+                <p>La consulta es libre. Para conservar el progreso de la ruta clásica, el 3/3 se registra en orden de misión. Este test no bloquea las etapas nuevas.</p>
                 <div className="mastery-rule">
                   <span>CRITERIO</span><strong>3 / 3</strong><small>puedes repetir sin penalización</small>
                 </div>
@@ -574,8 +568,8 @@ export default function Home() {
                   <div className="mastery-result is-passed" role="status">
                     <CircleCheckBig aria-hidden="true" />
                     <div>
-                      <strong>{isLastLessonInSector ? `Sector ${activeSector.id} dominado` : "Misión superada"}</strong>
-                      <span>{isLastLessonInSector ? `Has completado sus ${sectorQuestionCount} preguntas y las ${activeSector.lessons.length} misiones.` : "La siguiente misión ya está disponible en la ruta."}</span>
+                      <strong>{lessonComplete ? (isLastLessonInSector ? `Sector ${activeSector.id} dominado` : "Misión superada") : "Práctica de consulta completada"}</strong>
+                      <span>{!lessonComplete ? "Has resuelto este test fuera de orden; el progreso clásico no ha cambiado." : isLastLessonInSector ? `Has completado sus ${sectorQuestionCount} preguntas y las ${activeSector.lessons.length} misiones.` : "Puedes consultar otra misión."}</span>
                     </div>
                     {hasNextLesson && (
                       <Button type="button" onClick={goToNextLesson}>{nextLessonChangesSector ? `Entrar en Sector ${nextLesson?.id.slice(0, 2)}` : "Siguiente misión"} <ArrowRight /></Button>

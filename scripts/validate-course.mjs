@@ -10,7 +10,7 @@ const challenges = (await import(dataUrl(fs.readFileSync("app/practice-challenge
 const studyWeeks = (await import(dataUrl(fs.readFileSync("app/study-plan.ts","utf8")))).studyWeeks;
 const advanced = (await import(dataUrl(fs.readFileSync("app/advanced-probes.ts","utf8")))).advancedProbes;
 const final = (await import(dataUrl(fs.readFileSync("app/final-probes.ts","utf8")))).finalProbes;
-const studySource = fs.readFileSync("app/study-labs.tsx","utf8");
+const studySource = fs.readFileSync("app/study-labs.tsx","utf8").replace(/\r\n/g, "\n");
 const localProbeCode = studySource.slice(studySource.indexOf("const probes:"),studySource.indexOf("\n\nexport function StudyLab"))
   .replace("const probes: Record<string, Probe> =", "export const localProbes =")
   .replace(/  \.\.\.(advancedProbes|finalProbes),\n/g, "");
@@ -78,5 +78,24 @@ for(const [index,week] of studyWeeks.entries()) {
 if(nextPlanIndex!==orderedIds.length) errors.push(`Study plan ends after ${nextPlanIndex}/${orderedIds.length} lessons`);
 if(ids.size!==143 || questions!==429 || labs!==143 || Object.keys(challenges).length!==50)
   errors.push(`Unexpected totals ${ids.size} lessons / ${questions} questions / ${labs} labs / ${Object.keys(challenges).length} cases`);
+const { stages } = await import(dataUrl(fs.readFileSync("app/etapas/curriculum.ts", "utf8")));
+const { assess, firstPending } = await import(dataUrl(fs.readFileSync("app/etapas/progress.ts", "utf8")));
+const pages = {};
+if (new Set(stages.map(stage => stage.id)).size !== stages.length) errors.push("Hay identificadores de etapa duplicados");
+for (const [i, stage] of stages.entries()) {
+  if (firstPending(stages, pages) !== i) errors.push(`Etapa inaccesible: ${stage.id}`);
+  for (const [lesson] of stage.further) if (!ids.has(lesson)) errors.push(`${stage.id}: referencia desconocida ${lesson}`);
+  if (!stage.pieces.length || stage.pieces.some(card => card.length !== 5 || card.some(value => !value.trim())))
+    errors.push(`${stage.id}: ficha de decisión incompleta`);
+  if (stage.quiz.length !== 3 || stage.quiz.some(q => !q.choices[q.correct] || q.choices.some(([choice, reason]) => !choice || !reason)))
+    errors.push(`${stage.id}: test incompleto`);
+  const correct = stage.quiz.map(q => q.correct);
+  if (assess(stage, correct, false).mastered || assess(stage, correct.slice(1), true).mastered ||
+      assess(stage, [-1, ...correct.slice(1)], true).mastered || !assess(stage, correct, true).mastered)
+    errors.push(`${stage.id}: el dominio debe exigir el caso explicado y todas las respuestas correctas`);
+  pages[stage.id] = { done: true };
+}
+if (firstPending(stages, pages) !== stages.length || firstPending(stages, { [stages[1].id]: { done: true } }) !== 0)
+  errors.push("El desbloqueo debe respetar la primera etapa pendiente");
 if(errors.length) {console.error(errors.join("\n"));process.exitCode=1;}
-else console.log("Validación OK: 18 sectores, 143 misiones, 429 preguntas, 143 laboratorios y 50 casos abiertos.");
+else console.log(`Validación OK: ${stages.length} etapas, casos, tests, referencias y desbloqueos; 18 sectores, 143 misiones, 429 preguntas, 143 laboratorios y 50 casos abiertos.`);

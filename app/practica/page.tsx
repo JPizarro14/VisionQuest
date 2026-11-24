@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import Link from "@/components/document-link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, RotateCcw, Target, XCircle } from "lucide-react";
 import { allLessons, availableSectors } from "@/app/course-map";
@@ -139,7 +139,7 @@ export default function PracticePage() {
         <Link className="practice-brand" href="/"><span className="brand-glyph">VQ</span><strong>VISIONQUEST</strong></Link>
         {studying
           ? <button className="practice-back" type="button" onClick={configure}><ArrowLeft aria-hidden="true" /> Configurar otra sesión</button>
-          : <Link className="practice-back" href="/"><ArrowLeft aria-hidden="true" /> Volver al temario</Link>}
+          : <Link className="practice-back" href="/"><ArrowLeft aria-hidden="true" /> Volver al mapa de etapas</Link>}
       </header>
       <div className={"practice-frame" + (studying ? " practice-frame-study" : "")}>
         {!loaded ? <p role="status">Cargando tu historial de práctica…</p> : <>
@@ -148,7 +148,7 @@ export default function PracticePage() {
         <div className="practice-heading">
           <span className="practice-eyebrow"><Target aria-hidden="true" /> ESTACIÓN DE ENTRENAMIENTO</span>
           <h1>Practica hasta poder explicarlo.</h1>
-          <p>Preguntas de todo el curso, cálculos sin variantes repetidas, lectura y revisión de código, y casos para defender tus decisiones. Tu respuesta importa tanto como el acierto.</p>
+          <p>Banco de práctica libre por sectores. Este historial es independiente de los tests de la ruta por etapas. Incluye cálculos, lectura de código y casos para defender tus decisiones.</p>
         </div>
         <div className="practice-stats" aria-label="Contenido y progreso">
           <div><strong>{practiceCounts.total.toLocaleString("es-ES")}</strong><span>ejercicios disponibles</span></div>

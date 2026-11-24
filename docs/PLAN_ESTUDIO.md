@@ -1,5 +1,7 @@
 # VisionQuest · calendario semanal hasta diciembre de 2026
 
+> Calendario opcional de la biblioteca clásica. En el [recorrido por etapas](../README.md#empezar-estudiar-por-etapas) no hay fechas de desbloqueo ni obligación de completar estas 143 misiones.
+
 Actualizado el 28 de septiembre de 2026. Son **143 misiones en 18 sectores**. El objetivo de este calendario es superar la última misión **el 27 de diciembre**, con cuatro días para repasar. Parte de la misión 01.01; si ya has superado alguna, usa el tiempo liberado para repasar o adelantar sin saltarte los casos.
 
 **Carga realista:** unas **9–14 horas por semana**, entre 9 y 14 misiones nuevas según su dificultad. Incluye lectura, laboratorio, tres preguntas, el caso abierto de los sectores 11–18 y un repaso breve. No todas las misiones duran igual: una introducción puede llevar 25–40 minutos; matemáticas, geometría y casos integradores pueden necesitar 60–90 minutos o más. Estima el tiempo real después de las dos primeras semanas.

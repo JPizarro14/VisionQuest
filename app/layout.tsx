@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "VisionQuest · Aprende Computer Vision",
   description:
-    "Ruta interactiva y progresiva para comprender Computer Vision desde sus fundamentos.",
+    "Cuaderno de campo de visión artificial: siete etapas para entender un sistema, elegir sus piezas y comprobar cada decisión.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

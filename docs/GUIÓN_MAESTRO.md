@@ -1,5 +1,7 @@
 # VisionQuest · guion maestro
 
+> Este índice corresponde a la biblioteca clásica (`/biblioteca`), ahora de consulta libre. El [itinerario principal](../README.md#empezar-estudiar-por-etapas) se organiza por etapas y tiene progreso propio. Las referencias al desbloqueo de misiones describen el registro de dominio clásico, no un requisito para leerlas.
+
 Actualizado el 28 de septiembre de 2026. Este documento es el mapa de los **18 sectores y 143 misiones**. Cada misión tiene explicación, experimento y tres preguntas con diagnóstico; las 50 misiones de los sectores 11–18 añaden un caso abierto con pauta de autocorrección.
 
 ## Criterio de cada misión
