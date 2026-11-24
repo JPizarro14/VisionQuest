@@ -63,6 +63,7 @@ export function StageReader({ index }: { index: number }) {
         <nav aria-label="Pasos de estudio">{panels.map(({name, icon: StepIcon}, i) =>
           <button type="button" key={name} aria-current={panel === i ? "step" : undefined} onClick={() => setPanel(i)}><StepIcon /><span>{name}</span><small>0{i + 1}</small></button>)}</nav>
         <div className="fb-aim"><span className="fb-kicker">Al terminar podrás</span><p>{stage.goal}</p></div>
+        <Link className="fb-practice-link" href={`/practica?etapa=${stage.id}`}><ClipboardCheck /> Practicar esta etapa <ChevronRight /></Link>
         <details className="fb-refs"><summary>Ampliar en la biblioteca</summary>{stage.further.map(([id, name]) => <Link key={id} href={`/biblioteca?leccion=${id}`}>{name} <ChevronRight /></Link>)}</details>
       </aside>
       <article className="fb-paper">
@@ -127,6 +128,9 @@ export function StageReader({ index }: { index: number }) {
           {page.done && <div className="fb-passed"><Check /><strong>Etapa superada</strong>{index < stages.length - 1
             ? <Link className="fb-inline" href={`/etapas/${stages[index + 1].id}`}>Abrir etapa {folio(index + 1)} →</Link>
             : <Link className="fb-inline" href="/">Recorrido completo · Volver al mapa →</Link>}</div>}
+          <aside className="fb-transfer"><span className="fb-kicker"><ClipboardCheck /> Práctica de entrevista</span>
+            <h3>¿Podrías defender la decisión sin opciones?</h3><p>Estas tres preguntas cierran la lectura. En el banco de esta etapa puedes alternar teoría, cálculos, código y casos con solución explicada.</p>
+            <Link className="fb-inline" href={`/practica?etapa=${stage.id}`}>Abrir el banco de esta etapa →</Link></aside>
         </>}
       </article>
     </div>

@@ -6,8 +6,9 @@ type Check = {
   choices: [label: string, feedback: string][];
   correct: number;
 };
+export type StageId = "captura" | "datos" | "preparacion" | "prediccion" | "entrenamiento" | "evaluacion" | "despliegue";
 export type Stage = {
-  id: string;
+  id: StageId;
   title: string;
   question: string;
   goal: string;

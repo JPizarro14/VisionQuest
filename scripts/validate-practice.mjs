@@ -15,6 +15,12 @@ const codeUrl = dataUrl(file("app/practice-code-choice.ts")
   .replace('"@/app/practice-types"', '"' + typesUrl + '"'));
 const reasoningUrl = dataUrl(file("app/practice-reasoning.ts"));
 const { reasoningPrompts } = await import(reasoningUrl);
+const curriculumUrl = dataUrl(file("app/etapas/curriculum.ts"));
+const { stages } = await import(curriculumUrl);
+const withCurriculum = path => dataUrl(file(path).replace('"@/app/etapas/curriculum"', `"${curriculumUrl}"`));
+const placementUrl = withCurriculum("app/practice-placement.ts");
+const fieldbookUrl = withCurriculum("app/practice-fieldbook.ts");
+const { individualPlacements, readingPractice } = await import(placementUrl);
 const builderUrl = dataUrl(file("app/sector-builder.ts"));
 const names = ["one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen"];
 const lessons = [];
@@ -27,6 +33,8 @@ for (const name of names) {
 }
 const lessonsUrl = dataUrl("export const allLessons = " + JSON.stringify(lessons) + ";");
 const bankSource = file("app/practice-bank.ts")
+  .replace('"@/app/practice-placement"', `"${placementUrl}"`)
+  .replace('"@/app/practice-fieldbook"', `"${fieldbookUrl}"`)
   .replace('"@/app/course-map"', '"' + lessonsUrl + '"')
   .replace('"@/app/practice-challenges"', '"' + challengesUrl + '"')
   .replace('"@/app/practice-numerical"', '"' + numericalUrl + '"')
@@ -34,7 +42,7 @@ const bankSource = file("app/practice-bank.ts")
   .replace('"@/app/practice-code-choice"', '"' + codeUrl + '"')
   .replace('"@/app/practice-reasoning"', '"' + reasoningUrl + '"')
   .replace('"@/app/practice-types"', '"' + typesUrl + '"');
-const { practiceItems, practiceCounts } = await import(dataUrl(bankSource));
+const { practiceItems, practiceCounts, retiredPractice } = await import(dataUrl(bankSource));
 const {
   createPracticeSession, getPracticeCandidates, PracticeHistoryError, restorePracticeHistory,
 } = await import(dataUrl(file("app/practice-session.ts")));
@@ -160,7 +168,6 @@ const calculationAnswers = {
     const [focal, baseline, disparity] = numbers(prompt, /focal (\d+) px, baseline (\d+(?:[.,]\d+)?) m, disparidad (\d+) px/);
     return (focal * baseline / disparity).toFixed(3) + " m";
   },
-  "independent-units": prompt => numbers(prompt, /^(\d+) pacientes tienen/)[0],
   "label-agreement": prompt => {
     const [agreed, total] = numbers(prompt, /coinciden en (\d+) de (\d+) imágenes/);
     return fraction(agreed, total);
@@ -195,10 +202,12 @@ for (const item of practiceItems) {
   prompts.add(item.prompt);
   if (!lessons.some(l => l.id === item.lessonId) || !item.prompt.trim())
     errors.push("Orphan or empty prompt " + item.id);
+  if (!stages.some(stage => stage.id === item.stageId) || !["etapa", "ampliacion"].includes(item.depth))
+    errors.push("Unknown stage or depth " + item.id);
   if (item.kind === "choice") {
     if (item.options.length !== 4 || new Set(item.options).size !== 4 ||
         item.feedback.length !== 4 || item.feedback.some(f => !f.trim()) ||
-        item.correctIndex < 0 || item.correctIndex > 3 ||
+        !Number.isInteger(item.correctIndex) || item.correctIndex < 0 || item.correctIndex > 3 ||
         !item.feedback[item.correctIndex].startsWith("Correcto:") ||
         item.feedback.some((message, index) => index !== item.correctIndex && message.startsWith("Correcto:")))
       errors.push("Invalid choice/feedback " + item.id + ": " + item.options.join(" | "));
@@ -223,19 +232,19 @@ for (const item of practiceItems) {
     errors.push("Generic reasoning template " + item.id);
 }
 const byId = new Map(practiceItems.map(item => [item.id, item]));
+for (const id of [...individualPlacements.keys(), ...readingPractice]) {
+  if (!byId.has(id)) errors.push("Asignación editorial sin pregunta: " + id);
+}
 for (const lesson of lessons) {
   const authored = reasoningPrompts[lesson.id];
-  if (!authored || authored.length !== lesson.sections.length + 1 ||
+  if (!authored || authored.length !== lesson.sections.length ||
       authored.some(prompt => !prompt.trim() || !prompt.includes("¿")))
     errors.push("Missing explicit reasoning questions " + lesson.id);
-  const oral = byId.get("oral-" + lesson.id);
-  if (oral?.kind !== "open" || oral.prompt !== authored?.[0] ||
-      !oral.solution.includes(lesson.keyIdea) ||
-      lesson.sections.some(section => section.paragraphs.some(paragraph => !oral.solution.includes(paragraph))))
-    errors.push("Incomplete oral question/solution " + lesson.id);
   for (const [index, section] of lesson.sections.entries()) {
-    const item = byId.get(`section-${lesson.id}-${index + 1}`);
-    if (item?.kind !== "open" || item.prompt !== authored?.[index + 1] ||
+    const id = `section-${lesson.id}-${index + 1}`;
+    if (retiredPractice.has(id)) continue;
+    const item = byId.get(id);
+    if (item?.kind !== "open" || item.prompt !== authored?.[index] ||
         item.solution !== section.paragraphs.join(" "))
       errors.push("Mismatched section question/solution " + lesson.id + "-" + (index + 1));
   }
@@ -257,7 +266,6 @@ if (rgbQuestion?.kind !== "open" || !/RGB.*mostrar.*detectar.*iluminación/.test
 for (const [id, expected] of [
   ["case-11.01", ["(112,47,132,57)", "(124,54,164,74)"]],
   ["case-12.06", ["72%", "textos reales", "falsos positivos"]],
-  ["interview-12-case", ["72%", "condicional"]],
   ["case-16.02", ["600 imágenes", "cola sigue creciendo"]],
   ["case-18.01", ["(10,20)", "(x+30,y+10)"]],
 ]) {
@@ -265,28 +273,20 @@ for (const [id, expected] of [
   if (item?.kind !== "open" || expected.some(answer => !item.solution.includes(answer)))
     errors.push("Incomplete worked answer " + id);
 }
-if (familyCounts.size !== 36 || [...familyCounts.values()].some(count => count !== 1))
-  errors.push("Expected one representative exercise for each of the 36 numerical families");
-if (practiceCounts.total !== 1163 || practiceCounts.total !== practiceItems.length || practiceCounts.courseChoices !== 429 ||
-    practiceCounts.numerical !== 36 || practiceCounts.cases !== 50 ||
-    practiceCounts.curated !== 36 || practiceCounts.codeChoices !== 36 ||
-    practiceCounts.oral !== lessons.length + lessons.reduce((count, lesson) => count + lesson.sections.length, 0))
-  errors.push("Unexpected practice counts " + JSON.stringify(practiceCounts));
-const sectorCounts = [55, 94, 90, 90, 76, 62, 62, 62, 62, 62, 70, 54, 54, 54, 54, 54, 54, 54];
-for (let n = 1; n <= 18; n++) {
-  const sector = String(n).padStart(2, "0");
-  const prefix = String(n).padStart(2, "0") + ".";
-  for (const category of ["lectura-codigo", "revisar-codigo"]) {
-    if (practiceItems.filter(item => item.lessonId.startsWith(prefix) && item.category === category).length !== 1)
-      errors.push("Missing or duplicate code format " + prefix + category);
-  }
-  const expected = practiceItems.filter(item => item.lessonId.startsWith(prefix));
-  if (expected.length !== sectorCounts[n - 1])
-    errors.push("Unexpected deduplicated sector count " + sector + ": " + expected.length);
+if (familyCounts.size !== Object.keys(calculationAnswers).length || [...familyCounts.values()].some(count => count !== 1))
+  errors.push("Missing or duplicate numerical family");
+for (const { id: stage } of stages) {
+  const expected = practiceItems.filter(item => item.stageId === stage);
+  const core = getPracticeCandidates(practiceItems, stage, "tema", {}, false, "etapa");
+  const extra = getPracticeCandidates(practiceItems, stage, "tema", {}, false, "ampliacion");
+  if (!extra.length || !core.some(item => item.kind === "choice" && item.code) ||
+      !core.some(item => item.category === "caso") || !core.some(item => item.category === "calculo") ||
+      [...core, ...extra].length !== expected.length || core.some(item => item.depth !== "etapa"))
+    errors.push("Incomplete practice coverage or incorrect depth filter: " + stage);
   const practiced = Object.fromEntries(expected.map(item => [
     item.id, { attempts: 1, mistakes: 0, needsReview: false },
   ]));
-  const complete = getPracticeCandidates(practiceItems, sector, "tema", practiced, true);
+  const complete = getPracticeCandidates(practiceItems, stage, "tema", practiced, true, "todo");
   const random = Math.random;
   let session;
   try {
@@ -299,15 +299,20 @@ for (let n = 1; n <= 18; n++) {
   if (session.length !== expected.length || sessionIds.size !== expected.length ||
       expected.some(item => !sessionIds.has(item.id)) ||
       session.every((item, index) => item.id === expected[index].id))
-    errors.push("Complete-topic session must shuffle every exercise exactly once: " + sector);
-  if (getPracticeCandidates(practiceItems, sector, "mixto", practiced, true).length)
-    errors.push("Unseen rounds must exclude practiced exercises: " + sector);
+    errors.push("Complete-stage session must shuffle every exercise exactly once: " + stage);
+  if (getPracticeCandidates(practiceItems, stage, "mixto", practiced, true, "todo").length)
+    errors.push("Unseen rounds must exclude practiced exercises: " + stage);
   const round = createPracticeSession(expected, "mixto", 10);
   if (round.length !== 10 || new Set(round.map(item => item.id)).size !== 10)
-    errors.push("Ordinary rounds must retain their size without duplicates: " + sector);
+    errors.push("Ordinary rounds must retain their size without duplicates: " + stage);
 }
-if (getPracticeCandidates(practiceItems, "todos", "tema", {}, false).length)
-  errors.push("Complete-topic study requires a specific sector");
+if (getPracticeCandidates(practiceItems, "todas", "tema", {}, false, "todo").length)
+  errors.push("Complete-stage study requires a specific stage");
+for (const [id, stage] of [["calc-crack-resolution-1","captura"], ["calc-validation-count-1","datos"],
+  ["snippet-09-review","preparacion"], ["course-s2-softmax-shift","prediccion"], ["snippet-07-review","entrenamiento"],
+  ["calc-missed-defects-1","evaluacion"], ["snippet-16-review","despliegue"]]) {
+  if (byId.get(id)?.stageId !== stage) errors.push("Pregunta fuera de su etapa: " + id);
+}
 const previousHistory = {
   "calc-pixels-1": { attempts: 1, mistakes: 0, needsReview: false },
   "calc-pixels-17": { attempts: 2, mistakes: 1, needsReview: false },
@@ -319,11 +324,11 @@ if (restored["calc-pixels-1"]?.attempts !== 4 || restored["calc-pixels-1"]?.mist
     !restored["calc-pixels-1"]?.needsReview || restored["calc-pixels-17"] || restored["calc-pixels-40"] ||
     restored[practiceItems[0].id]?.attempts !== 3 || !previousHistory["calc-pixels-17"])
   errors.push("Legacy numerical history must merge attempts and unresolved errors without mutating its input");
-if (getPracticeCandidates(practiceItems, "01", "mixto", restored, true).some(item => item.id === "calc-pixels-1") ||
-    !getPracticeCandidates(practiceItems, "01", "errores", restored, true).some(item => item.id === "calc-pixels-1"))
+if (getPracticeCandidates(practiceItems, "captura", "mixto", restored, true, "todo").some(item => item.id === "calc-pixels-1") ||
+    !getPracticeCandidates(practiceItems, "captura", "errores", restored, true, "ampliacion").some(item => item.id === "calc-pixels-1"))
   errors.push("Migrated numerical progress must remain seen and available for error review");
 for (const mode of ["test", "codigo", "abiertas", "casos"]) {
-  const candidates = getPracticeCandidates(practiceItems, "01", mode, {}, false);
+  const candidates = getPracticeCandidates(practiceItems, "todas", mode, {}, false, "todo");
   if (!candidates.length || candidates.some(item =>
     mode === "test" ? item.kind !== "choice" :
     mode === "codigo" ? item.kind !== "choice" || !item.code :
@@ -340,6 +345,4 @@ try {
 }
 if (!invalidHistoryRejected) errors.push("Invalid stored progress must report an explicit history error");
 if (errors.length) { console.error(errors.join("\n")); process.exitCode = 1; }
-else console.log("Práctica OK: " + practiceCounts.total + " ejercicios, " + familyCounts.size +
-  " familias numéricas con respuestas comprobadas, " + practiceCounts.oral + " preguntas de razonamiento, " +
-  practiceCounts.codeChoices + " retos de código, " + lessons.length + " lecciones cubiertas.");
+else console.log(`Práctica OK: ${practiceCounts.total} ejercicios (${practiceCounts.choices} test y ${practiceCounts.open} abiertos) en ${stages.length} etapas.`);

@@ -92,7 +92,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const patients = 4 + v;
-    return q("split-groups", "06.02", v, patients + " pacientes aportan 5 imágenes cada uno. Si todas las imágenes de una persona deben permanecer juntas, ¿cuántos grupos distintos por paciente hay?",
+    return q("split-groups", "06.02", v, patients + " pacientes aportan 5 imágenes cada uno. Al dividir por ID de paciente, ¿cuántos grupos distintos hay en total?",
       patients, "Agrupa todas las imágenes de cada paciente antes de dividir.",
       [patients * 5, "Es el número de imágenes, pero cinco comparten el mismo paciente."],
       [patients + 1, "No existe un grupo adicional: la unidad independiente es cada paciente."],
@@ -118,7 +118,7 @@ export const numericalPractice: PracticeChoice[] = [
     ["(0, 0, 0)", "Las entradas positivas pasan sin alteración."])),
   example(v => {
     const n = 101 + 10 * v, batches = Math.ceil(n / 16);
-    return q("steps-epoch", "08.01", v, n + " ejemplos, batch size 16, sin descartar el último batch incompleto. ¿Cuántos pasos por época?",
+    return q("steps-epoch", "08.01", v, n + " ejemplos, batch size 16, sin reemplazo ni descarte del último batch y con una actualización por batch. ¿Cuántos pasos de optimizador hay por época?",
       batches, "El último batch también cuenta: ceil(N/16).",
       [batches - 1, "Eso descarta el último batch incompleto."],
       [n, "Un paso procesa un batch, no un solo ejemplo."],
@@ -166,7 +166,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const side = 100 + v, d = 20 + v, intersection = 80 * side, union = 2 * side * side - intersection;
-    return q("box-iou", "11.02", v, "Dos cajas cuadradas de lado " + side + " px se desplazan " + d + " px solo en x. ¿Cuál es IoU exacta?",
+    return q("box-iou", "11.02", v, "Dos cajas cuadradas de lado " + side + " px se desplazan " + d + " px solo en x una respecto a la otra; comparten el intervalo en y. ¿Cuál es su IoU exacta?",
       ratio(intersection, union), "Intersección = 80 × lado; unión = 2 × lado² − intersección.",
       [ratio(intersection, side * side), "Eso divide por el área de una sola caja; IoU divide por la unión."],
       [ratio(intersection, 2 * side * side), "Has sumado áreas sin restar el solape."],
@@ -228,14 +228,6 @@ export const numericalPractice: PracticeChoice[] = [
       [(f * d / 0.1).toFixed(3) + " m", "Has multiplicado por la disparidad en lugar de dividir."],
       [(d / (f * 0.1)).toFixed(3) + " m", "Has invertido la relación profundidad-disparidad."],
       [(f * 0.1).toFixed(3) + " m", "Falta dividir por la disparidad medida."]);
-  }),
-  example(v => {
-    const people = 12 + v;
-    return q("independent-units", "15.01", v, people + " pacientes tienen 6 imágenes cada uno. ¿Cuántos grupos distintos hay si divides por paciente y mantienes juntas sus imágenes?",
-      people, "Mantén las seis imágenes de una persona en el mismo grupo.",
-      [people * 6, "Eso cuenta imágenes correlacionadas como si fueran pacientes diferentes."],
-      [6, "Es el número de imágenes por paciente, no el número de grupos."],
-      [1, "Hay varios pacientes; la unidad es cada paciente."]);
   }),
   example(v => {
     const agreed = 80 + v, total = 120 + v;

@@ -39,7 +39,7 @@
 .fb-top nav { gap: .25rem; font-size: .88rem; }
 .fb-top nav a, .fb-top nav button { gap: .4rem; padding: .55rem .7rem; border: 1px solid transparent; border-radius: 2px; }
 .fb-top nav a:hover, .fb-top nav button:hover { background: #20313c; border-color: var(--edge); }
-.fb-top nav a:first-child { color: var(--gold); border-color: #625741; background: #262722; }
+.fb-top nav a[aria-current] { color: var(--gold); border-color: #625741; background: #262722; }
 .fb-kicker, .fb-card-copy small, .fb-viewport figcaption { gap: .45rem; font: 700 .71rem/1.45 var(--mono); letter-spacing: .105em; text-transform: uppercase; color: var(--accent); }
 .fb-brief h1, .fb-map-heading h2, .fb-paper h2, .fb-library-note h2, .fb-orientation h2, .fb-phase h3 { font-family: var(--display); font-weight: 720; letter-spacing: -.037em; line-height: 1.07; text-wrap: balance; }
 .fb-bay { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); border: 1px solid #47606c; background: var(--frame); box-shadow: 6px 6px #060d13; }
@@ -114,6 +114,9 @@ a.fb-map-card:hover { outline: 1px solid var(--marker); outline-offset: -2px; }
 .fb-library-note { color: var(--ink); background: var(--surface); padding: clamp(1.25rem, 2.6vw, 2rem); border-left: 4px solid var(--accent); }
 .fb-library-note p { max-width: 66ch; }
 .fb-library-note a { flex: none; }
+.fb-resource-links { display: grid; gap: .55rem; justify-items: start; flex-shrink: 0; }
+.fb-practice-link { display: flex; align-items: center; gap: .45rem; color: var(--gold); margin-top: .9rem; font-weight: 650; }
+.fb-practice-link:hover { text-decoration: underline; }
 .fb-footer { border-top: 1px solid var(--edge); padding-block: 1.2rem; background: #0a1219; color: var(--dim); font: .78rem/1.6 var(--mono); }
 .fb-footer>div { flex-wrap: wrap; justify-content: space-between; gap: .5rem; }
 .fb-footer span { gap: .4rem; }

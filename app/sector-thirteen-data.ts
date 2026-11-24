@@ -36,7 +36,7 @@ takeaways:["Matching uno a uno limita duplicados.","«Sin objeto» absorbe consu
 questions:[
 ["Con 100 queries fijas, el máximo de predicciones no vacías por pasada es...",["100","Infinito","1","Depende de canales"],0,["Correcto: una salida por query.","No en esa configuración.","Pueden ser varias.","No depende así."]],
 ["En DETR original el matching de entrenamiento es...",["Uno a uno","Cada predicción con todos los GT","Solo por color","NMS antes de GT"],0,["Correcto: asignación bipartita.","Provocaría duplicados.","No basta.","NMS no es matching."]],
-["El diseño original exige NMS clásico?",["No","Sí siempre","Solo en OCR","Solo con dos clases"],0,["Correcto: predicción de conjunto evita esa etapa.","No en el original.","Otra tarea.","No depende."]]
+["En el DETR original, ¿qué permite predecir un conjunto de cajas sin la NMS clásica al final?",["Entrenar con asignación uno a uno entre predicciones y anotaciones","Aplicar un umbral que garantice cajas sin solape","Usar siempre una sola query por imagen","Eliminar la clase sin objeto"],0,["Correcto: el matching uno a uno desalienta múltiples predicciones del mismo objeto. No garantiza que jamás haya duplicados.","Un corte por score no compara las cajas.","Hay varias queries para poder predecir varios objetos.","La categoría sin objeto permite dejar queries sin asignar."]]
 ],labTitle:"Asigna consultas",labInstruction:"Aumenta objetos reales frente a diez consultas disponibles.",source:["Carion et al. · DETR","https://arxiv.org/abs/2005.12872"]
 },
 {

@@ -33,7 +33,7 @@ const draft: DraftLesson[] = [
     questions:[
       ["¿Cuánto es ReLU(−3)?",["0","−3","3","0,5"],0,["Correcto: max(0,−3)=0.","ReLU anula negativos.","Es valor absoluto.","No es sigmoid."]],
       ["¿Qué normaliza clases excluyentes para sumar uno?",["ReLU","Softmax","Sigmoid independiente","Otsu"],1,["No normaliza.","Correcto: compara todos los logits.","No impone esa suma.","Es un método de umbral."]],
-      ["Softmax de 0,9 significa...",["Acierto seguro","Puntuación que puede estar mal calibrada","IoU de 0,9","Pérdida cero"],1,["Todavía puede errar.","Correcto: hay que medir calibración.","IoU compara regiones.","La pérdida depende de etiqueta y puntuación."]]
+      ["La componente softmax de la clase predicha vale 0,9. ¿Qué sabes sin evaluar la calibración?",["Que en exactamente nueve de cada diez casos acertará","Que es una puntuación normalizada, no una frecuencia de acierto verificada","Que la IoU vale 0,9","Que la pérdida es cero"],1,["Esa correspondencia debe comprobarse con etiquetas representativas.","Correcto: agrupa casos de confianza similar y compara con la frecuencia de acierto.","IoU compara regiones, no scores.","Incluso si la clase es correcta, −ln(0,9) no es cero."]]
     ],
     labTitle:"Compara activaciones",labInstruction:"Mueve z y compara ReLU y sigmoid.",
     source:["PyTorch · Activations","https://docs.pytorch.org/docs/stable/nn.html#non-linear-activations"]
@@ -145,7 +145,7 @@ const draft: DraftLesson[] = [
     ],
     takeaways:["Productos repetidos cambian escala del gradiente.","Rutas residuales pueden facilitar optimización.","Inspecciona gradientes, no solo accuracy."],
     questions:[
-      ["0,5³ vale...",["0,125","1,5","3,5","0"],0,["Correcto: producto de tres mitades.","Es suma.","No corresponde.","No es exactamente cero."]],
+      ["En una cadena escalar sin ramas hay tres derivadas locales iguales a 0,5. Si la señal de gradiente que entra es 1, ¿qué señal sale?",["0,125","1,5","0,5","0"],0,["Correcto: la regla de la cadena multiplica: 1×0,5×0,5×0,5=0,125.","Sumarías contribuciones de ramas, no factores en serie.","Solo has atravesado un eslabón.","El gradiente se reduce, pero no se anula."]],
       ["Una conexión residual aporta...",["Ruta de identidad","Una etiqueta de test","Profundidad real","Un ROI"],0,["Correcto: una vía alrededor de un bloque.","Sería fuga.","No mide distancia.","Es otra noción."]],
       ["Gradient clipping sirve para...",["Limitar gradientes excesivos","Añadir píxeles","Calibrar probabilidades","Crear etiquetas"],0,["Correcto: acota norma o valores.","No altera resolución.","No garantiza calibración.","Ground truth es externo."]]
     ],

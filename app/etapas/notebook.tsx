@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import Link from "@/components/document-link";
+import { usePathname } from "next/navigation";
 import { BookOpen, Compass, Eclipse, Library, ListChecks } from "lucide-react";
 import { stages } from "./curriculum";
 import { blankPage, firstPending, type NotebookPage } from "./progress";
@@ -42,6 +43,7 @@ export function useNotebook() {
 }
 
 export function NotebookShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [book, setBook] = useState(readBook);
   const ready = useSyncExternalStore(subscribeHydration, () => true, () => false);
   const visible = ready ? book : emptyBook;
@@ -86,9 +88,9 @@ export function NotebookShell({ children }: { children: ReactNode }) {
       <header className="fb-top"><div className="fb-wrap fb-top-inner">
         <Link href="/" className="fb-brand" aria-label="VisionQuest · Portada"><span aria-hidden="true" className="brand-glyph">VQ</span><span>VisionQuest<small>Cuaderno de campo</small></span></Link>
         <nav aria-label="Navegación principal">
-          <Link href="/"><Compass /> <span>Etapas</span></Link>
+          <Link href="/" aria-current={pathname === "/" ? "page" : pathname?.startsWith("/etapas/") ? "location" : undefined}><Compass /> <span>Etapas</span></Link>
           <Link href="/biblioteca"><Library /> <span>Biblioteca</span></Link>
-          <Link href="/practica"><ListChecks /> <span>Práctica</span></Link>
+          <Link href="/practica" aria-current={pathname === "/practica" ? "page" : undefined}><ListChecks /> <span>Práctica</span></Link>
           <button type="button" onClick={toggleTheme} disabled={!ready} aria-label={visible.dark ? "Activar lectura clara" : "Activar lectura oscura"} title="Cambiar tema de lectura"><Eclipse /></button>
         </nav>
       </div></header>

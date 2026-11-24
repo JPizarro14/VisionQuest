@@ -1,3 +1,5 @@
+import type { StageId } from "@/app/etapas/curriculum";
+
 export type PracticeChoice = {
   kind: "choice";
   id: string;
@@ -22,6 +24,8 @@ export type PracticeOpen = {
 };
 
 export type PracticeItem = PracticeChoice | PracticeOpen;
+export type PracticeDepth = "etapa" | "ampliacion";
+export type StageExercise = PracticeItem & { stageId: StageId; depth: PracticeDepth };
 
 export function calculatedChoice(
   family: string,

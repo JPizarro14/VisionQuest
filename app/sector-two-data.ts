@@ -282,7 +282,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       },
       {
         id: "s2-l1-345",
-        prompt: "Con los mismos puntos, ¿cuánto vale la distancia L1?",
+        prompt: "Entre los puntos (1, 2) y (4, 6), ¿cuánto vale la distancia Manhattan (L1)?",
         options: ["5", "7", "12", "25"],
         correctIndex: 1,
         feedback: [
@@ -602,7 +602,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "PCA resume variación, no relevancia",
         paragraphs: [
           "PCA centra los datos y busca ejes ortogonales que capturan la mayor varianza. Puede calcularse mediante autovectores de la covarianza o con SVD sobre los datos centrados.",
-          "Mayor varianza no significa necesariamente mayor utilidad para la etiqueta. PCA es no supervisado: podría descartar una señal pequeña pero decisiva para clasificar.",
+          "Mayor varianza no significa mayor utilidad para la etiqueta. Si conservas una sola componente de dos columnas independientes, no borras una columna: proyectas las dos sobre un eje. Pierdes la variación perpendicular, aunque sea pequeña, y con ella podrías perder la señal que distingue las grietas.",
         ],
       },
     ],
@@ -1044,7 +1044,7 @@ export const sectorTwoLessons: SectorLesson[] = [
     questions: [
       {
         id: "s2-log-product",
-        prompt: "¿Qué identidad permite sustituir un producto de probabilidades por una suma?",
+        prompt: "Si a y b son probabilidades estrictamente positivas, ¿qué identidad permite trabajar con su producto en el dominio logarítmico?",
         options: ["log(ab) = log(a) + log(b)", "log(ab) = log(a)log(b)", "log(a+b) = log(a)+log(b)", "exp(a) = a²"],
         correctIndex: 0,
         feedback: [
@@ -1068,14 +1068,14 @@ export const sectorTwoLessons: SectorLesson[] = [
       },
       {
         id: "s2-log-zero",
-        prompt: "¿Por qué se usa a veces epsilon antes de un logaritmo?",
-        options: ["Para crear más clases", "Para evitar log(0)", "Para cambiar RGB a BGR", "Para aumentar la resolución"],
+        prompt: "Una implementación sustituye log(p) por log(max(p, ε)) con 0 < ε < 1 y p entre 0 y 1. ¿Qué gana y qué cambia?",
+        options: ["Recupera exactamente la probabilidad original si hubo underflow", "Evita log(0), pero modifica el valor cuando p < ε", "Garantiza probabilidades calibradas", "Es equivalente a log_softmax para cualquier ε"],
         correctIndex: 1,
         feedback: [
-          "No altera el número de clases.",
-          "Correcto: log(0) tiende a −infinito y puede contaminar el cálculo.",
-          "No tiene relación con el orden de canales.",
-          "No añade muestras espaciales.",
+          "No puede distinguir las probabilidades que se redondearon a cero.",
+          "Correcto: se impone un suelo. En clasificación con logits es preferible calcular log_softmax directamente si se quiere la log-probabilidad sin ese recorte.",
+          "La calibración se contrasta con frecuencias en ejemplos representativos.",
+          "log_softmax usa log-sum-exp sobre logits, no fija un suelo arbitrario a p.",
         ],
       },
     ],

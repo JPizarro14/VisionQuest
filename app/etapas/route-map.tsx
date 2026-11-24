@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/document-link";
-import { ArrowDown, ArrowRight, BookOpen, Check, CircuitBoard, ClipboardCheck, Database, Focus, Layers3, LockKeyhole, RadioTower, ScanLine, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowRight, Check, CircuitBoard, ClipboardCheck, Database, Focus, Layers3, LockKeyhole, RadioTower, ScanLine, SlidersHorizontal } from "lucide-react";
 import { stages } from "./curriculum";
 import { useNotebook } from "./notebook";
 import { StationBanner } from "./station-banner";
@@ -46,6 +46,6 @@ export function RouteMap() {
             : <Link className="fb-map-card" href={`/etapas/${stage.id}`}>{content}</Link>}</li>;
         })}</ol></section>)}</div>
       </section>
-      <aside className="fb-library-note"><div><span className="fb-kicker"><BookOpen /> Archivo de la estación</span><h2>Biblioteca y práctica libre</h2><p>Consulta las misiones clásicas, tus apuntes anteriores y los ejercicios por sector. No son requisitos para avanzar en esta ruta.</p></div><Link className="fb-secondary" href="/biblioteca">Explorar biblioteca <ArrowRight /></Link></aside>
+      <aside className="fb-library-note"><div><span className="fb-kicker"><ClipboardCheck /> Estación de práctica</span><h2>De los apuntes a la entrevista</h2><p>Repasa lo estudiado en cada etapa o amplía con código y casos de diseño. Las misiones y tus apuntes anteriores siguen disponibles en la biblioteca.</p></div><div className="fb-resource-links"><Link className="fb-primary" href={`/practica?etapa=${target.id}`}>Practicar por etapas <ArrowRight /></Link><Link className="fb-inline" href="/biblioteca">Consultar biblioteca</Link></div></aside>
   </main>;
 }

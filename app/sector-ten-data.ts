@@ -13,7 +13,7 @@ const draft: DraftLesson[]=[
     takeaways:["Multiclase y multietiqueta no comparten necesariamente pérdida.","Softmax suma uno; sigmoid independiente no.","Decide qué hacer con «ninguna» y ambigüedad."],
     questions:[
       ["Una foto contiene persona y bicicleta. ¿Qué formulación permite ambas?",["Multiclase exclusiva","Multietiqueta","Regresión de profundidad","Umbral Otsu"],1,["Solo elegiría una.","Correcto: dos etiquetas simultáneas.","No son distancias.","No reconoce clases."]],
-      ["Dos sigmoid independientes pueden sumar...",["Exactamente uno siempre","Más o menos de uno","Siempre cero","Igual que IoU"],1,["No están acopladas.","Correcto: cada salida es independiente.","Pueden ser positivas.","No es una métrica de solapamiento."]],
+      ["Aplicamos sigmoid por separado a dos logits multietiqueta. ¿Qué restricción tiene la suma de las salidas?",["Debe ser exactamente uno","No tiene que valer uno: puede ser menor, igual o mayor","Debe ser menor que uno","Su suma mide la correlación entre etiquetas"],1,["Esa normalización corresponde a softmax entre clases.","Correcto: dos logits cero dan 0,5+0,5=1; dos positivos suman más de uno. Esto no implica independencia estadística de las etiquetas.","Dos logits positivos ya dan un contraejemplo.","El acoplamiento estadístico no se deduce de sumar dos scores."]],
       ["En multiclase exclusiva, argmax...",["Elige puntuación mayor","Garantiza certeza","Da IoU","Calibra el modelo"],0,["Correcto: compara logits o scores.","Puede elegir entre opciones malas.","No hay regiones.","No calibra."]]
     ],
     labTitle:"Activa etiquetas",labInstruction:"Cambia el umbral para dos puntuaciones independientes.",
@@ -31,7 +31,7 @@ const draft: DraftLesson[]=[
     ],
     takeaways:["Score, probabilidad y decisión son cosas distintas.","El umbral expresa costes.","Elige umbral sin tocar test."],
     questions:[
-      ["Bajar el umbral suele...",["Aumentar positivos predichos","Reducir todos los positivos","Cambiar etiquetas reales","Asegurar calibración"],0,["Correcto: más scores lo superan.","Ocurre lo contrario.","Ground truth no cambia.","No corrige probabilidades."]],
+      ["Con scores fijos y la regla «positivo si score ≥ umbral», ¿qué ocurre al bajar el umbral?",["El número de positivos predichos aumenta o se mantiene","Se pierden algunos positivos ya predichos","Cambian las etiquetas reales","Las probabilidades se calibran"],0,["Correcto: ningún score que ya superaba el corte deja de superarlo; si no hay scores en el intervalo añadido, no cambia la cuenta.","El nuevo conjunto de positivos contiene al anterior.","Solo cambia la decisión.","Mover el corte no modifica los scores."]],
       ["Un score sigmoid 0,8 significa necesariamente 80% de acierto?",["Sí","No, requiere evaluar calibración","Solo en RGB","Solo con batch grande"],1,["Puede estar descalibrado.","Correcto: compara frecuencia real entre casos de score semejante.","No depende de canales.","Batch no garantiza calibración."]],
       ["¿Dónde eliges el umbral operativo?",["Validación representativa","Test final en cada experimento","Train loss únicamente","Por estética"],0,["Correcto: incorpora costes y prevalencia.","Sesga test.","No expresa decisión real.","No es evidencia."]]
     ],

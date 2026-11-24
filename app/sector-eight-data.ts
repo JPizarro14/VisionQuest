@@ -13,7 +13,7 @@ const draft: DraftLesson[] = [
     takeaways:["Batch es un grupo; época es un recorrido.","Pasos ≈ ceil(N/B) si no descartas resto.","Épocas no bastan para comparar presupuestos."],
     questions:[
       ["100 ejemplos, batch 32, sin drop_last. ¿Cuántos lotes?",["3","4","32","100"],1,["Falta el lote final de cuatro.","Correcto: 32+32+32+4.","Es el tamaño del batch.","Es N."]],
-      ["¿Qué cambia si duplicas B con N fijo?",["Suelen bajar los pasos por época","Se duplica N","Se crean etiquetas","Se garantiza mejor generalización"],0,["Correcto: hay menos lotes.","N no cambia.","No modifica ground truth.","No existe garantía."]],
+      ["Con N fijo, una pasada sin reemplazo, sin descartar el último lote y un paso de optimizador por lote, ¿qué suele pasar si duplicas el batch size?",["Suelen bajar los pasos por época","Se duplica N","Se crean etiquetas","Se garantiza mejor generalización"],0,["Correcto: pasas de ceil(N/B) a ceil(N/(2B)); el redondeo puede dejar el mismo recuento si ya cabía todo en un lote.","El conjunto no cambia.","El tamaño del lote no altera las anotaciones.","Menos pasos no garantiza mejor generalización."]],
       ["Una época significa...",["Una actualización siempre","Un recorrido del conjunto de train según el cargador","Una validación completa siempre","Un píxel visto"],1,["Hay varios lotes normalmente.","Correcto: puede incluir muchos pasos.","Es otro conjunto.","No define la época."]]
     ],
     labTitle:"Cuenta los pasos",labInstruction:"Cambia batch para un dataset de 100 muestras y observa el último lote.",
@@ -89,7 +89,7 @@ const draft: DraftLesson[] = [
     takeaways:["El calendario define cuándo cambia η.","Batch y época cambian escala temporal.","Registra tasa real y valida."],
     questions:[
       ["η=0,1, gamma=0,1 tras un descenso: nueva η",["0,01","1","0,2","0"],0,["Correcto: multiplicación por 0,1.","Has dividido al revés.","Has sumado.","No llega a cero."]],
-      ["Scheduler previsto por época pero llamado por batch produce...",["Descenso más rápido","La misma tasa","Etiquetas nuevas","Más píxeles"],0,["Correcto: avanza más veces.","El número de llamadas cambió.","No modifica ground truth.","No cambia resolución."]],
+      ["Un StepLR reduce la tasa cada 5 llamadas. Esperabas llamarlo por época, pero lo llamas tras cada uno de los 20 batches. ¿Qué cambia?",["El primer descenso ocurre antes de acabar la primera época","La tasa sigue fija cinco épocas","Cambia el número de muestras por lote","El factor de descenso se vuelve cero"],0,["Correcto: cinco llamadas ahora son cinco batches, no cinco épocas.","El calendario cuenta llamadas, no sabe qué representan.","El scheduler no modifica el cargador.","Cambia el instante del descenso, no gamma."]],
       ["¿Dónde seleccionas el calendario?",["Validación y protocolo consistente","Mirando test cada paso","Solo por loss train","Por nombre del modelo"],0,["Correcto: evita sobreajustar test.","Contamina evaluación.","Puede ocultar mala generalización.","No es evidencia."]]
     ],
     labTitle:"Programa la tasa",labInstruction:"Cambia el número de descensos con η inicial 0,1 y factor 0,5.",

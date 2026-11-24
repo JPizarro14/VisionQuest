@@ -1,4 +1,5 @@
-import type { PracticeItem } from "@/app/practice-types";
+import type { PracticeDepth, PracticeItem, StageExercise } from "@/app/practice-types";
+import type { StageId } from "@/app/etapas/curriculum";
 
 export type PracticeMode = "mixto" | "test" | "codigo" | "abiertas" | "casos" | "errores" | "tema";
 export type PracticeHistoryEntry = { attempts: number; mistakes: number; needsReview: boolean };
@@ -48,15 +49,17 @@ export function restorePracticeHistory(stored: unknown, items: readonly Practice
 }
 
 export function getPracticeCandidates(
-  items: readonly PracticeItem[],
-  sector: string,
+  items: readonly StageExercise[],
+  stage: StageId | "todas",
   mode: PracticeMode,
   history: PracticeHistory,
   unseenOnly: boolean,
-): PracticeItem[] {
-  if (mode === "tema" && sector === "todos") return [];
+  depth: PracticeDepth | "todo",
+): StageExercise[] {
+  if (mode === "tema" && stage === "todas") return [];
   return items.filter(item => {
-    if (sector !== "todos" && !item.lessonId.startsWith(sector + ".")) return false;
+    if (stage !== "todas" && item.stageId !== stage) return false;
+    if (mode !== "errores" && depth !== "todo" && item.depth !== depth) return false;
     if (mode === "tema") return true;
     if (!(mode === "mixto" || mode === "errores" ||
       (mode === "test" && item.kind === "choice") ||
@@ -78,19 +81,19 @@ function shuffled<T>(items: readonly T[]): T[] {
 }
 
 export function createPracticeSession(
-  items: readonly PracticeItem[],
+  items: readonly StageExercise[],
   mode: PracticeMode,
   amount: number,
-): PracticeItem[] {
+): StageExercise[] {
   if (mode === "tema") return shuffled(items);
-  const groups = new Map<string, PracticeItem[]>();
+  const groups = new Map<string, StageExercise[]>();
   for (const item of items) {
     const key = item.kind === "choice" ? item.code ? "codigo" : item.category :
-      item.category === "codigo" || item.category === "caso" ? "caso" : "abierta";
+      item.category === "codigo" ? "codigo" : item.category === "caso" ? "caso" : "abierta";
     groups.set(key, [...(groups.get(key) ?? []), item]);
   }
   for (const [key, group] of groups) groups.set(key, shuffled(group));
-  const selected: PracticeItem[] = [];
+  const selected: StageExercise[] = [];
   const pattern = ["concepto", "calculo", "codigo", "abierta", "caso", "concepto", "calculo", "codigo", "abierta", "abierta"];
   while (selected.length < amount) {
     let added = false;

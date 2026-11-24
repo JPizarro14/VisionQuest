@@ -15,8 +15,7 @@ function question(
   };
 }
 
-// Dos formatos por sector: interpretar una ejecución y revisar una implementación
-// frente a una intención explícita. Los ejemplos son independientes del entorno.
+// Interpretar una ejecución o revisar código frente a una intención explícita.
 export const codePractice: PracticeChoice[] = [
   question("01-read", "01.02", "lectura-codigo",
     "Una imagen NumPy usa el orden (alto, ancho, canales). ¿Qué imprime este recorte?",
@@ -28,7 +27,7 @@ export const codePractice: PracticeChoice[] = [
       ["(4, 6, 3)", "El recorte sí modifica las dos primeras dimensiones; únicamente conserva la dimensión de canales."],
     ], 0),
   question("01-review", "01.02", "revisar-codigo",
-    "Se quiere extraer una caja xyxy=(x1,y1,x2,y2) de una imagen H×W×C. ¿Está bien implementado?",
+    "Se quiere extraer una caja xyxy=(x1,y1,x2,y2) de una imagen H×W×C, con límites superiores exclusivos. ¿Está bien implementado?",
     ["roi = image[x1:x2, y1:y2]"],
     [
       ["Sí; NumPy usa primero x y después y.", "NumPy indexa primero las filas (y), después las columnas (x)."],
@@ -95,7 +94,7 @@ export const codePractice: PracticeChoice[] = [
     ], 3),
 
   question("05-read", "05.09", "lectura-codigo",
-    "Una caja xyxy en un tile empieza en (100, 40) de la imagen global. ¿Qué caja global imprime?",
+    "El origen de un tile está en (100, 40) de la imagen global. No hay resize ni padding. ¿Qué caja xyxy global imprime?",
     ["import numpy as np", "local = np.array([5, 8, 15, 18])", "origin = np.array([100, 40, 100, 40])", "print((local + origin).tolist())"],
     [
       ["[105, 48, 115, 58]", "Correcto: se suma x del origen a x1/x2 e y del origen a y1/y2."],
@@ -104,7 +103,7 @@ export const codePractice: PracticeChoice[] = [
       ["[5, 8, 115, 58]", "Los extremos iniciales también deben pasar a coordenadas globales."],
     ], 0),
   question("05-review", "05.10", "revisar-codigo",
-    "Se quiere hacer NMS entre detecciones de varios tiles solapados. Las cajas están en xyxy locales y la función NMS compara IoU. ¿Qué cambiarías?",
+    "Se quiere hacer NMS para una clase entre tiles solapados. Las cajas están en píxeles xyxy locales, sin resize ni padding, y NMS compara IoU. ¿Qué cambiarías?",
     ["boxes = [det.box for tile in tiles for det in tile.detections]", "keep = nms(boxes, scores, iou_threshold=0.5)"],
     [
       ["Nada; IoU es invariante a que cada caja tenga un origen distinto.", "IoU solo es válido si todas las cajas comparten el mismo sistema de coordenadas."],

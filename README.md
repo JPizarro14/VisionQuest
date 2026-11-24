@@ -114,13 +114,13 @@ El [guion maestro](docs/GUIÓN_MAESTRO.md) detalla los temas y prácticas de cad
 
 ## Entrenamiento
 
-La estación de entrenamiento (`/practica`) reúne 1.163 ejercicios: 429 preguntas del curso, 36 problemas numéricos sin variantes repetidas, 576 preguntas de razonamiento, 50 casos abiertos, 36 ejercicios abiertos de código o diseño y 36 preguntas de lectura o revisión de código.
+La estación de práctica (`/practica`) tiene **1.039 ejercicios: 510 preguntas tipo test y 529 abiertas**. Cada uno pertenece a una de las mismas siete etapas que los apuntes. Por ejemplo, el cálculo de píxeles por milímetro está en **Captura**, aunque su lectura de origen esté en la biblioteca de diseño de sistemas. Los tres controles de cada etapa no se cuentan en el banco ni se sustituyen.
 
-El formato **Estudiar tema completo** está seleccionado por defecto y presenta todas las preguntas del sector elegido, de todos los formatos e incluidas las ya practicadas, en orden aleatorio y sin un límite de ronda. Requiere seleccionar un sector concreto. Cada respuesta debe comprobarse o compararse y autoevaluarse antes de pasar a la siguiente.
+Pulsa **Practicar esta etapa** desde la lectura o el test. El enlace `/practica?etapa=evaluacion`, por ejemplo, abre la etapa de evaluación con **Lo estudiado** y una ronda mixta. **Ampliación de entrevista** añade técnicas más allá de la lectura; **Lo estudiado + ampliación** abarca todo el banco de la etapa. Puedes hacer rondas breves, mezclar todas las etapas, repasar errores o **estudiar la selección completa** sin límite de ronda.
 
-Al empezar, la configuración y las estadísticas se sustituyen por una pantalla centrada en el test. Puedes volver a configurar otra sesión sin perder las respuestas ya registradas. El historial de las antiguas variantes numéricas se agrupa en el ejercicio que permanece, conservando intentos, fallos y necesidades de repaso.
+Los tests explican el acierto y por qué no encaja la opción elegida. En los abiertos escribes tu respuesta y la contrastas con una solución y criterios de autocorrección: no hay calificación automática de texto. **Repasar mis errores** incluye ambos niveles de la etapa que selecciones. Los ejercicios conservados mantienen sus identificadores e historial; los retirados ya no se ofrecen ni se contabilizan.
 
-Las preguntas de razonamiento están redactadas por misión y sección: preguntan conceptos, comparaciones o situaciones concretas, en lugar de convertir automáticamente títulos y objetivos en enunciados. Las soluciones de entrevista incluyen la explicación desarrollada y sus convenciones; las de sección corresponden a su contenido. Sus identificadores se mantienen para conservar el historial local.
+Las asignaciones por tema y las excepciones pregunta a pregunta están en [practice-placement.ts](app/practice-placement.ts). Los [casos propios del cuaderno](app/practice-fieldbook.ts) dan prioridad a decisiones transferibles: cuándo cambiar la captura, cuándo un filtro borra la señal o cómo comparar dos modelos con la misma capacidad de revisión. La biblioteca clásica conserva sus lecturas.
 
 Para validar el contenido y las respuestas calculadas:
 
@@ -129,7 +129,7 @@ pnpm run validate:course
 node scripts/validate-practice.mjs
 ```
 
-El validador de práctica comprueba cobertura, identificadores, opciones, feedback, correspondencia entre preguntas y soluciones y las respuestas de los 36 problemas numéricos a partir de los datos de sus enunciados. También verifica los recorridos completos de los 18 sectores, los filtros de las rondas y la migración del historial de variantes eliminadas. Incluye regresiones específicas para forma y coordenadas (01.02) y la elección de RGB bajo cambios de iluminación (01.05). Estas comprobaciones no sustituyen la revisión editorial del contenido.
+El validador de práctica comprueba la asignación de etapa, la cobertura de formatos, los filtros, los identificadores y la coherencia de las opciones con su explicación. Recalcula las respuestas de las familias numéricas y comprueba la compatibilidad del historial de variantes. Estas comprobaciones no sustituyen la revisión editorial.
 
 ## Tecnologías
 

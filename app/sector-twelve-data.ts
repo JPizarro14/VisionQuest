@@ -22,7 +22,7 @@ sections:[["Un ejemplo","GT=10 píxeles, predicción=8 y solapan 6: unión=12, I
 takeaways:["Unión=TP+FP+FN.","Dice duplica TP en numerador.","Declara clases vacías y fondo."],
 questions:[
 ["TP=6, FP=2, FN=4: IoU",["0,5","0,667","0,75","1"],0,["Correcto: 6/12.","Eso se acerca a Dice.","No corresponde.","Hay errores."]],
-["Con esos conteos, Dice es...",["0,5","0,667","0,3","1"],1,["Es IoU.","Correcto: 12/(12+2+4).","No corresponde.","Hay errores."]],
+["Para la clase defecto de una máscara, TP=6, FP=2 y FN=4. ¿Cuánto vale Dice aproximadamente?",["0,5","0,667","0,75","1"],1,["6/(6+2+4) es IoU; Dice cuenta dos veces los TP.","Correcto: 2TP/(2TP+FP+FN)=12/18≈0,667.","6/(6+2) es precision; omite los FN.","Para Dice=1 no debería haber FP ni FN en este ejemplo."]],
 ["Si ambas máscaras están vacías, IoU directo...",["Tiene denominador cero y exige convención","Siempre vale 1 por definición matemática","Siempre vale 0","Se convierte en AP"],0,["Correcto: informa la política.","Una convención posible, no universal.","Otra convención posible.","Es otra métrica."]]
 ],lab:"seg-mask-iou",labTitle:"Dibuja la predicción",labInstruction:"Activa y desactiva píxeles de la máscara predicha; observa TP, FP, FN, IoU y Dice.",source:["TorchMetrics · Dice para segmentación","https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/functional/segmentation/dice.py"]
 },

@@ -2,20 +2,20 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "@/components/document-link";
-import Image from "next/image";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, RotateCcw, Target, XCircle } from "lucide-react";
-import { allLessons, availableSectors } from "@/app/course-map";
+import { stages, type StageId } from "@/app/etapas/curriculum";
+import { StationBanner } from "@/app/etapas/station-banner";
 import { practiceCounts, practiceItems } from "@/app/practice-bank";
 import {
   createPracticeSession, getPracticeCandidates, PracticeHistoryError, restorePracticeHistory,
   type PracticeHistory, type PracticeMode,
 } from "@/app/practice-session";
-import type { PracticeItem } from "@/app/practice-types";
+import type { PracticeDepth, StageExercise } from "@/app/practice-types";
 import "./practice.css";
 
 type StoredProgress = { history: PracticeHistory; canSave: boolean; notice: string | null };
 const historyKey = "visionquest-practice-history-v1";
-const lessonNames = new Map(allLessons.map(lesson => [lesson.id, lesson.navTitle]));
+const stageLabels = new Map(stages.map((stage, i) => [stage.id, `${String(i + 1).padStart(2, "0")} · ${stage.title}`]));
 const subscribeToHydration = () => () => {};
 const clientReady = () => true;
 const serverReady = () => false;
@@ -35,15 +35,16 @@ function readStoredProgress(): StoredProgress {
   }
 }
 
-export default function PracticePage() {
+export function PracticeStation({ initialStage, unknownStage }: { initialStage: StageId; unknownStage: boolean }) {
   const [progress, setProgress] = useState<StoredProgress>(readStoredProgress);
   const loaded = useSyncExternalStore(subscribeToHydration, clientReady, serverReady);
   const history = progress.history;
-  const [sector, setSector] = useState("todos");
-  const [mode, setMode] = useState<PracticeMode>("tema");
+  const [stageId, setStageId] = useState<StageId | "todas">(initialStage);
+  const [depth, setDepth] = useState<PracticeDepth | "todo">("etapa");
+  const [mode, setMode] = useState<PracticeMode>("mixto");
   const [unseenOnly, setUnseenOnly] = useState(false);
   const [amount, setAmount] = useState(10);
-  const [session, setSession] = useState<PracticeItem[]>([]);
+  const [session, setSession] = useState<StageExercise[]>([]);
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
@@ -55,8 +56,8 @@ export default function PracticePage() {
   const finishRef = useRef<HTMLHeadingElement>(null);
 
   const candidates = useMemo(
-    () => getPracticeCandidates(practiceItems, sector, mode, history, unseenOnly),
-    [sector, mode, history, unseenOnly],
+    () => getPracticeCandidates(practiceItems, stageId, mode, history, unseenOnly, depth),
+    [stageId, mode, history, unseenOnly, depth],
   );
   const pending = practiceItems.filter(item => history[item.id]?.needsReview).length;
   const practiced = practiceItems.filter(item => history[item.id]?.attempts > 0).length;
@@ -65,7 +66,7 @@ export default function PracticePage() {
   const finished = session.length > 0 && index >= session.length;
   const studying = session.length > 0;
   const completeTopic = mode === "tema";
-  const selectedSector = availableSectors.find(item => item.id === sector);
+  const selectedStage = stages.find(item => item.id === stageId);
 
   useEffect(() => {
     if (!loaded) return;
@@ -83,7 +84,7 @@ export default function PracticePage() {
     setRevealed(false);
     setEvaluated(false);
   }
-  function record(item: PracticeItem, mastered: boolean) {
+  function record(item: StageExercise, mastered: boolean) {
     const old = history[item.id] ?? { attempts: 0, mistakes: 0, needsReview: false };
     const nextHistory: PracticeHistory = {
       ...history,
@@ -134,45 +135,55 @@ export default function PracticePage() {
   }
 
   return (
-    <main className="practice-shell">
-      <header className="practice-topbar">
-        <Link className="practice-brand" href="/"><span className="brand-glyph">VQ</span><strong>VISIONQUEST</strong></Link>
-        {studying
-          ? <button className="practice-back" type="button" onClick={configure}><ArrowLeft aria-hidden="true" /> Configurar otra sesión</button>
-          : <Link className="practice-back" href="/"><ArrowLeft aria-hidden="true" /> Volver al mapa de etapas</Link>}
-      </header>
-      <div className={"practice-frame" + (studying ? " practice-frame-study" : "")}>
+    <main id="cuaderno" className="fb-wrap practice-frame">
+        <nav className="fb-crumb" aria-label="Ubicación">
+          {studying ? <button className="practice-back" type="button" onClick={configure}><ArrowLeft /> Configurar otra sesión</button>
+            : <Link href="/"><ArrowLeft /> Mapa de etapas</Link>}
+          {selectedStage && <><span aria-hidden="true">/</span><Link href={`/etapas/${selectedStage.id}`}>Lectura de la etapa</Link></>}
+        </nav>
+        <StationBanner code={selectedStage ? String(stages.indexOf(selectedStage) + 1).padStart(2, "0") : "CV"}
+          eyebrow={<><Target /> {studying ? "Ronda en curso" : "Estación de práctica"}</>}
+          title={studying ? selectedStage?.title ?? "Entrevista transversal" : "Practica hasta poder explicarlo."}>
+          <p>{studying ? `${session.length} ejercicios · Responde antes de consultar la explicación.`
+            : "Del píxel a la decisión: repasa lo que acabas de estudiar o defiende una solución ante una pregunta de entrevista."}</p>
+        </StationBanner>
         {!loaded ? <p role="status">Cargando tu historial de práctica…</p> : <>
         {progress.notice && <p className="practice-storage-notice" role="alert">{progress.notice}</p>}
         {!studying && <>
-        <div className="practice-heading">
-          <span className="practice-eyebrow"><Target aria-hidden="true" /> ESTACIÓN DE ENTRENAMIENTO</span>
-          <h1>Practica hasta poder explicarlo.</h1>
-          <p>Banco de práctica libre por sectores. Este historial es independiente de los tests de la ruta por etapas. Incluye cálculos, lectura de código y casos para defender tus decisiones.</p>
-        </div>
+        {unknownStage && <p className="fb-notice" role="status">La etapa del enlace no existe. Elige una de las siete etapas para practicar.</p>}
         <div className="practice-stats" aria-label="Contenido y progreso">
-          <div><strong>{practiceCounts.total.toLocaleString("es-ES")}</strong><span>ejercicios disponibles</span></div>
-          <div><strong>{practiceCounts.numerical}</strong><span>problemas de cálculo diferentes</span></div>
+          <div><strong>{practiceCounts.choices}</strong><span>preguntas tipo test</span></div>
+          <div><strong>{practiceCounts.open}</strong><span>preguntas abiertas</span></div>
           <div><strong>{practiced}</strong><span>practicados en este navegador</span></div>
           <div><strong>{pending}</strong><span>por repasar</span></div>
         </div>
 
         <section className="practice-panel practice-config" aria-labelledby="practice-setup">
           <div>
-            <span className="practice-eyebrow">CONFIGURA TU ESTUDIO</span>
-            <h2 id="practice-setup" ref={setupRef} tabIndex={-1}>Tu sesión de práctica</h2>
-            <p>Elige una ronda breve o estudia un tema completo. Hay un ejemplo por familia de cálculo y {practiceCounts.codeChoices} retos de lectura o revisión de código.</p>
+            <span className="practice-eyebrow">Cuaderno de campo / Entrenamiento</span>
+            <h2 id="practice-setup" ref={setupRef} tabIndex={-1}>Prepara tu sesión</h2>
+            <p><strong>Lo estudiado</strong> se resuelve con la lectura y el caso de la etapa. <strong>Ampliación de entrevista</strong> profundiza con otras técnicas, problemas y decisiones. Este repaso es independiente del test corto que desbloquea la siguiente lectura.</p>
           </div>
-          <div className="practice-filters" data-complete-topic={completeTopic}>
-            <label htmlFor="practice-sector">Sector
-              <select id="practice-sector" value={sector} onChange={event => setSector(event.target.value)}>
-                <option value="todos">Todos los sectores</option>
-                {availableSectors.map(item => <option key={item.id} value={item.id}>{item.id} · {item.title}</option>)}
+          <div className="practice-filters">
+            <label htmlFor="practice-stage">Etapa
+              <select id="practice-stage" value={stageId} onChange={event => {
+                const id = event.target.value as StageId | "todas";
+                setStageId(id);
+                if (id === "todas" && completeTopic) setMode("mixto");
+              }}>
+                {stages.map(item => <option key={item.id} value={item.id}>{stageLabels.get(item.id)}</option>)}
+                <option value="todas">Todas las etapas · entrevista transversal</option>
               </select>
             </label>
+            {mode !== "errores" && <label htmlFor="practice-depth">Contenido
+              <select id="practice-depth" value={depth} onChange={event => setDepth(event.target.value as PracticeDepth | "todo")}>
+                <option value="etapa">Lo estudiado</option><option value="ampliacion">Ampliación de entrevista</option>
+                <option value="todo">Lo estudiado + ampliación</option>
+              </select>
+            </label>}
             <label htmlFor="practice-mode">Formato
               <select id="practice-mode" value={mode} onChange={event => setMode(event.target.value as PracticeMode)}>
-                <option value="tema">Estudiar tema completo</option>
+                <option value="tema" disabled={!selectedStage}>Estudiar la selección completa</option>
                 <option value="mixto">Mixto · entrevista</option>
                 <option value="test">Tipo test</option>
                 <option value="codigo">Leer y revisar código</option>
@@ -193,39 +204,25 @@ export default function PracticePage() {
           </label>}
           {!completeTopic && unseenOnly && mode !== "errores" && <p className="practice-unseen-note">Las preguntas contestadas no se repiten en este recorrido. Los fallos siguen disponibles en «Repasar mis errores».</p>}
           {completeTopic && <p className="practice-topic-note">
-            {sector === "todos" ? "Selecciona un sector concreto para estudiar el tema entero." :
-              "Responderás todas las preguntas de este sector en orden aleatorio, incluidas las ya practicadas y todos los formatos."}
+            Responderás todas las preguntas de esta etapa y del contenido elegido, en orden aleatorio. Incluye todos los formatos y las ya practicadas.
           </p>}
           <div className="practice-start">
-            <span>{candidates.length.toLocaleString("es-ES")} {completeTopic ? "preguntas del tema completo" : unseenOnly && mode !== "errores" ? "ejercicios distintos sin responder" : "disponibles con estos filtros"}</span>
-            <button type="button" onClick={start} disabled={!candidates.length}>{completeTopic ? "Empezar tema completo" : "Empezar ronda"} <ArrowRight aria-hidden="true" /></button>
+            <span aria-live="polite">{candidates.length.toLocaleString("es-ES")} {completeTopic ? "ejercicios en la selección" : unseenOnly && mode !== "errores" ? "ejercicios distintos sin responder" : "disponibles con estos filtros"}</span>
+            <button type="button" onClick={start} disabled={!candidates.length}>{completeTopic ? "Empezar selección completa" : "Empezar ronda"} <ArrowRight aria-hidden="true" /></button>
           </div>
+          {mode === "errores" && <p className="practice-topic-note">Incluye los errores de lo estudiado y de ampliación {selectedStage ? "en esta etapa" : "en todas las etapas"}.</p>}
           {mode === "errores" && candidates.length === 0 &&
-            <p className="practice-empty">Todavía no hay errores pendientes en este sector. Puedes empezar una ronda mixta.</p>}
+            <p className="practice-empty">No hay errores pendientes en esta selección.</p>}
+          {mode !== "errores" && !unseenOnly && !candidates.length &&
+            <p className="practice-empty">No hay ejercicios con esta combinación. Prueba otro formato o incluye la ampliación.</p>}
           {!completeTopic && unseenOnly && mode !== "errores" && candidates.length === 0 &&
             <p className="practice-empty">Ya has visto todos los ejercicios distintos con estos filtros. Puedes repasar errores o desactivar esta opción para practicar de nuevo.</p>}
         </section>
         </>}
 
-        {studying && <header className="practice-session-heading">
-          <Image
-            className="practice-scene-image"
-            src="/observation-deck.webp"
-            alt="Estación de observación en un planeta remoto, representada en pixel art"
-            fill
-            priority
-            sizes="(max-width: 780px) calc(100vw - 28px), 1100px"
-          />
-          <div className="practice-scene-content">
-            <span className="practice-eyebrow">{completeTopic ? "ESTUDIO DEL TEMA COMPLETO" : "SESIÓN DE PRÁCTICA"}</span>
-            <h1>{selectedSector ? `${selectedSector.id} · ${selectedSector.title}` : "Todos los sectores"}</h1>
-            <p>{session.length} preguntas · Responde y revisa cada ejercicio antes de continuar.</p>
-          </div>
-        </header>}
-
         {active && <section className="practice-panel practice-question" aria-labelledby="practice-prompt" key={active.id}>
           <div className="practice-question-meta">
-            <span>{active.lessonId} · {lessonNames.get(active.lessonId)}</span>
+            <span>Etapa {stageLabels.get(active.stageId)}<br />{active.depth === "etapa" ? "Lo estudiado" : "Ampliación de entrevista"}</span>
             <strong>{index + 1} / {session.length}</strong>
           </div>
           <div className="practice-progress"><span style={{ width: ((index + 1) / session.length * 100) + "%" }} /></div>
@@ -274,21 +271,21 @@ export default function PracticePage() {
               {evaluated && <p className="practice-assessed">Valoración guardada para tus próximas rondas.</p>}
             </div>}
           </>}
+          {revealed && <p className="practice-reading"><Link className="fb-inline" href={`/biblioteca?leccion=${active.lessonId}`} target="_blank" rel="noreferrer">Ampliar el concepto en la biblioteca ↗</Link> <small>(otra pestaña)</small></p>}
           {(active.kind === "choice" ? revealed : evaluated) &&
             <button className="practice-next" type="button" onClick={next}>{index + 1 === session.length ? "Ver resultado" : "Siguiente ejercicio"} <ArrowRight aria-hidden="true" /></button>}
         </section>}
 
         {finished && <section className="practice-panel practice-finish" aria-live="polite">
-          <span className="practice-eyebrow">{completeTopic ? "TEMA COMPLETADO" : "RONDA COMPLETADA"}</span>
-          <h2 ref={finishRef} tabIndex={-1}>{score} / {session.length} razonados correctamente</h2>
+          <span className="practice-eyebrow">{completeTopic ? "SELECCIÓN COMPLETADA" : "RONDA COMPLETADA"}</span>
+          <h2 ref={finishRef} tabIndex={-1}>{score} / {session.length} resueltos o autoevaluados como correctos</h2>
           <p>Los fallos quedan en «Repasar mis errores» hasta que los resuelvas de nuevo. Los casos abiertos dependen de tu propia valoración tras comparar con la pauta.</p>
           <div className="practice-finish-actions">
-            <button className="practice-primary" type="button" onClick={start} disabled={!candidates.length}>{completeTopic ? "Repetir tema" : "Otra ronda"} <ArrowRight aria-hidden="true" /></button>
+            <button className="practice-primary" type="button" onClick={start} disabled={!candidates.length}>{completeTopic ? "Repetir selección" : "Otra ronda"} <ArrowRight aria-hidden="true" /></button>
             <button className="practice-primary practice-secondary" type="button" onClick={configure}>Configurar otra sesión</button>
           </div>
         </section>}
         </>}
-      </div>
     </main>
   );
 }
