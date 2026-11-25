@@ -40,8 +40,8 @@ export function PracticeStation({ initialStage, unknownStage }: { initialStage: 
   const loaded = useSyncExternalStore(subscribeToHydration, clientReady, serverReady);
   const history = progress.history;
   const [stageId, setStageId] = useState<StageId | "todas">(initialStage);
-  const [depth, setDepth] = useState<PracticeDepth | "todo">("etapa");
-  const [mode, setMode] = useState<PracticeMode>("mixto");
+  const [depth, setDepth] = useState<PracticeDepth | "todo">("todo");
+  const [mode, setMode] = useState<PracticeMode>("tema");
   const [unseenOnly, setUnseenOnly] = useState(false);
   const [amount, setAmount] = useState(10);
   const [session, setSession] = useState<StageExercise[]>([]);
