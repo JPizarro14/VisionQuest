@@ -76,7 +76,7 @@ export const codePractice: PracticeChoice[] = [
 
   question("04-read", "04.02", "lectura-codigo",
     "Esta erosión binaria 1D usa una ventana de tres celdas y relleno cero. ¿Qué imprime?",
-    ["mask = [0, 1, 1, 1, 0]", "out = [int(all(mask[max(0, i-1):min(5, i+2)]))", "       if 0 < i < 4 else 0 for i in range(5)]", "print(out)"],
+    ["mask = [0, 1, 1, 1, 0]", "padded = [0] + mask + [0]", "out = [int(all(padded[i:i+3])) for i in range(len(mask))]", "print(out)"],
     [
       ["[0, 1, 1, 1, 0]", "Las posiciones 1 y 3 tienen un cero dentro de su vecindario y desaparecen."],
       ["[1, 1, 1, 1, 1]", "La erosión no añade píxeles activos; eso contradice su operación de mínimo local."],
@@ -151,7 +151,7 @@ export const codePractice: PracticeChoice[] = [
     ], 1),
 
   question("08-read", "08.01", "lectura-codigo",
-    "El DataLoader conserva el último batch incompleto (drop_last=False). ¿Cuántos pasos tiene una época?",
+    "Un cargador recorre 101 ejemplos una sola vez, en lotes de 16 y sin descartar el lote final. Si el optimizador se actualiza una vez por lote, ¿cuántos pasos hace en esa época?",
     ["import math", "samples = 101", "batch_size = 16", "print(math.ceil(samples / batch_size))"],
     [
       ["6", "Seis batches cubren 96 ejemplos y falta uno con cinco ejemplos."],
@@ -160,13 +160,13 @@ export const codePractice: PracticeChoice[] = [
       ["101", "Eso sería un paso por muestra con batch de tamaño 1."],
     ], 2),
   question("08-review", "08.03", "revisar-codigo",
-    "Se quiere medir validación de forma estable mientras se aplica una augmentación aleatoria. ¿Está bien el loop?",
+    "Quieres comparar dos clasificadores sobre exactamente las mismas imágenes de validación, sin aumentos durante la evaluación. El código elige al azar qué imágenes reflejar cada vez. ¿Qué cambiarías en este bucle de PyTorch?",
     ["for x, y in val_loader:", "    x = random_flip(x)", "    logits = model(x)", "    update_metric(logits, y)"],
     [
       ["Sí; aplicar la misma augmentación al validar siempre mejora la estimación.", "Un cambio aleatorio durante validación altera cada medida; la política de evaluación debe estar fijada."],
       ["Sí, si se duplica val_loader para tener más imágenes.", "Duplicar ejemplos no corrige la aleatoriedad ni crea datos independientes."],
-      ["No; hay que augmentar también las etiquetas de clasificación.", "Un flip normalmente no cambia la clase, y el problema principal es el preproceso aleatorio de validación."],
-      ["No; aplicar augmentación aleatoria solo en entrenamiento y validar con preproceso fijo en model.eval() y no_grad().", "Correcto: la validación comparable usa un pipeline determinista y el modelo en modo evaluación."],
+      ["Basta con aplicar el reflejo también a los índices de clase.", "Un índice de clase no tiene geometría; seguirías comparando entradas distintas."],
+      ["Quitar random_flip de validación y evaluar ambos con model.eval() y torch.no_grad().", "Correcto: usa el mismo preproceso para los dos, desactiva el comportamiento de entrenamiento y evita calcular gradientes."],
     ], 3),
 
   question("09-read", "09.02", "lectura-codigo",
@@ -179,7 +179,7 @@ export const codePractice: PracticeChoice[] = [
       ["(8, 1, 16, 16)", "El batch sigue como primer eje y conserva tamaño 1."],
     ], 0),
   question("09-review", "09.01", "revisar-codigo",
-    "x tiene forma (B,H,W,C), y la CNN espera (B,C,H,W). ¿Corrige el código los ejes?",
+    "El tensor x de PyTorch viene en orden (lote, alto, ancho, canales) y la red espera (lote, canales, alto, ancho). ¿El reshape del fragmento mueve correctamente los canales de cada píxel?",
     ["x = x.reshape(x.shape[0], x.shape[3], x.shape[1], x.shape[2])", "logits = model(x)"],
     [
       ["Sí; reshape mueve el canal final al segundo eje sin cambiar ningún píxel.", "reshape reinterpretará el orden lineal de los valores; la forma puede coincidir aunque los canales queden mezclados."],
@@ -189,7 +189,7 @@ export const codePractice: PracticeChoice[] = [
     ], 1),
 
   question("10-read", "10.04", "lectura-codigo",
-    "Con TP=8, FP=2 y FN=4, ¿qué precisión imprime el código?",
+    "Un detector tiene 8 aciertos entre sus alarmas (TP), 2 falsas alarmas (FP) y 4 defectos omitidos (FN). ¿Qué precisión imprime el código?",
     ["tp, fp, fn = 8, 2, 4", "precision = tp / (tp + fp)", "print(precision)"],
     [
       ["0.67", "8/12 corresponde al recall, pues el denominador de recall es TP+FN."],
@@ -198,11 +198,11 @@ export const codePractice: PracticeChoice[] = [
       ["1.00", "Los dos falsos positivos reducen la precisión por debajo de 1."],
     ], 1),
   question("10-review", "10.04", "revisar-codigo",
-    "Se busca F1 a partir de precision y recall, ambos positivos. ¿Es correcta la función?",
+    "Esta función debe calcular F1 a partir de dos fracciones: precisión y sensibilidad (recall). ¿Es correcta para todos los valores entre 0 y 1?",
     ["def f1(precision, recall):", "    return (precision + recall) / 2"],
     [
       ["Sí; F1 es la media aritmética de ambas métricas.", "F1 es la media armónica; la media aritmética penaliza menos las diferencias grandes entre métricas."],
-      ["No; F1 es precision * recall sin factor adicional.", "El producto no es F1; por ejemplo, 1 y 1 darían 1 pero otras parejas difieren."],
+      ["No; F1 es precision * recall sin factor adicional.", "Con precisión=recall=0,5, F1 vale 0,5, pero el producto daría 0,25."],
       ["No; usar 2 * precision * recall / (precision + recall), con política para denominador cero.", "Correcto: F1 es la media armónica; debe tratarse explícitamente el caso precision+recall=0."],
       ["No; usar (precision + recall) / (precision * recall).", "Esa expresión no es una puntuación F1 y puede exceder 1 o dividir por cero."],
     ], 2),
@@ -217,8 +217,8 @@ export const codePractice: PracticeChoice[] = [
       ["0.3333333333333333", "Correcto: la intersección es 50, la unión 150 y la proporción es 1/3."],
     ], 3),
   question("11-review", "11.03", "revisar-codigo",
-    "Se quiere asignar como máximo una predicción a cada caja real con IoU ≥ 0,5. ¿Cumple el conteo?",
-    ["for pred in predictions:", "    if any(iou(pred, gt) >= 0.5 for gt in ground_truth):", "        tp += 1"],
+    "En una foto y para una sola clase, cada caja anotada solo puede contar como un acierto (TP). Se exige solapamiento IoU ≥ 0,5. ¿Este bucle evita que dos detecciones cuenten dos veces un mismo objeto?",
+    ["tp = 0", "for pred in predictions:", "    if any(iou(pred, gt) >= 0.5 for gt in ground_truth):", "        tp += 1"],
     [
       ["No; emparejar predicciones y GT uno a uno por clase; las duplicadas cuentan como FP.", "Correcto: el mismo GT no puede justificar dos TP; también deben contabilizarse FP y GT sin match como FN."],
       ["Sí; toda caja que solape una GT es un TP aunque haya duplicados.", "Dos predicciones sobre el mismo GT no son dos objetos detectados; una sería duplicada."],
@@ -274,7 +274,7 @@ export const codePractice: PracticeChoice[] = [
       ["0.16", "Eso sería dividir la duración por la tasa, con unidades que no dan fotogramas."],
     ], 1),
   question("14-review", "14.01", "revisar-codigo",
-    "Se pretende tomar un frame cada segundo; timestamp_ms y last_ms están en milisegundos. ¿Es correcto el filtro?",
+    "Quieres dejar al menos un segundo entre fotogramas seleccionados. timestamp_ms y last_ms son tiempos en milisegundos. ¿Lo garantiza el filtro?",
     ["if timestamp_ms - last_ms >= 1:", "    sample(frame)", "    last_ms = timestamp_ms"],
     [
       ["Sí; un segundo equivale a una unidad en milisegundos.", "Un segundo son 1000 milisegundos; el código toma casi cada frame."],
@@ -288,7 +288,7 @@ export const codePractice: PracticeChoice[] = [
     ["train_docs = {'A', 'B', 'C'}", "test_docs = {'C', 'D'}", "print(train_docs & test_docs)"],
     [
       ["set()", "El documento C figura en ambos conjuntos; la intersección no es vacía."],
-      ["{'A', 'B', 'D'}", "Eso se parece a una diferencia simétrica, no a la intersección &."],
+      ["{'A', 'B', 'D'}", "Es la diferencia simétrica: los documentos que están en uno solo de los dos conjuntos."],
       ["{'A', 'B', 'C', 'D'}", "Eso sería la unión de documentos."],
       ["{'C'}", "Correcto: C aparece en train y test; sus tiles pueden causar fuga de información."],
     ], 3),
@@ -331,10 +331,10 @@ export const codePractice: PracticeChoice[] = [
       ["(210, 105, 230, 125)", "Correcto: ambos puntos de la caja reciben el origen global de la ROI."],
     ], 3),
   question("17-review", "17.05", "revisar-codigo",
-    "Un sistema de inspección debe distinguir un modelo silencioso de una cámara desconectada. ¿Basta este control?",
+    "Una pieza puede no producir detecciones porque está bien, porque el modelo se equivoca o porque no llegó su foto. ¿Basta el siguiente control para declararla buena?",
     ["if len(detections) == 0:", "    report('no hay defectos')"],
     [
-      ["No; verificar adquisición y calidad de frame, estados de error y latidos del pipeline antes de concluir «sin defectos».", "Correcto: cero detecciones puede significar imagen válida sin defectos o fallo de captura/inferencia; hay que distinguirlos."],
+      ["No; comprobar que hubo captura válida e inferencia completada y distinguir «sin detecciones» de «sin imagen».", "Correcto: si falta la foto no se pudo inspeccionar. Incluso con una captura válida, «sin detecciones» es una predicción, no una garantía de que no haya defectos."],
       ["Sí; cero detecciones siempre demuestra ausencia de defectos.", "Sin una captura válida y una inferencia completada, no se puede inferir ausencia de defectos."],
       ["No; informar siempre «hay defectos» cuando la lista está vacía.", "Eso tampoco distingue el estado real del sistema y genera falsas alarmas."],
       ["No; aumentar el umbral de confianza hasta que aparezca una detección.", "Aumentar el umbral suele producir menos detecciones y no diagnostica un fallo de cámara."],
@@ -351,7 +351,7 @@ export const codePractice: PracticeChoice[] = [
     ], 1),
   question("18-review", "18.03", "revisar-codigo",
     "Se quiere informar del rendimiento final de un umbral de detección en datos nunca usados para ajustar. ¿Es válido el procedimiento?",
-    ["for threshold in candidates:", "    score = evaluate(model, test_set, threshold)", "    if score > best_score:", "        best_score, best_threshold = score, threshold", "report(best_score)"],
+    ["best_score = -float('inf')", "for threshold in candidates:", "    score = evaluate(model, test_set, threshold)", "    if score > best_score:", "        best_score, best_threshold = score, threshold", "report(best_score)"],
     [
       ["Sí; como no se reentrena el modelo, el test sigue siendo independiente.", "Seleccionar el umbral según sus resultados usa el test para ajustar una decisión del sistema."],
       ["No; basta con ocultar best_threshold en el informe.", "Ocultar el umbral no deshace el ajuste sobre test ni corrige el sesgo del score."],

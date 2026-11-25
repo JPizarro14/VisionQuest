@@ -12,22 +12,20 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Primero decide qué es objeto",
         paragraphs: [
-          "En una máscara binaria hay dos conjuntos: primer plano y fondo. OpenCV suele mostrar el primer plano en blanco y el fondo en negro, pero esa convención no es una ley física. Si inviertes la polaridad, también inviertes la interpretación de encoger y expandir.",
-          "Antes de tocar un parámetro, escribe una frase comprobable: «los píxeles 1 representan las letras» o «los píxeles 1 representan el defecto». Así evitas limpiar justo lo que querías conservar.",
+          "Si el operador trata 1 (blanco) como primer plano, la erosión encoge el blanco y la dilatación lo expande. Con letras negras sobre fondo blanco, erosionar el blanco puede engrosar las letras, no afinarlas. Para operar sobre la tinta como objeto, crea una máscara con 1 en las letras y 0 en el fondo.",
         ],
       },
       {
         title: "Una pequeña plantilla con intención",
         paragraphs: [
-          "El elemento estructurante —también llamado footprint o kernel morfológico— es una cuadrícula de posiciones activas. Un rectángulo mira todas las direcciones; una cruz privilegia los ejes; un disco o elipse trata las direcciones de forma más equilibrada.",
-          "El tamaño expresa la escala de lo que consideras pequeño. Una mota de dos píxeles puede desaparecer con una plantilla que no afecta a una pieza de veinte, pero una plantilla demasiado grande también se comerá detalles válidos.",
+          "El elemento estructurante (footprint) indica qué posiciones del vecindario participan. En 3×3, un cuadrado lleno incluye las diagonales y una cruz no. Aumentar el tamaño aumenta el alcance: en una erosión, un trazo desaparece allí donde no cabe la plantilla completa, aunque sea un trazo largo.",
         ],
       },
       {
         title: "El ancla es el punto de apoyo",
         paragraphs: [
-          "Al deslizar la plantilla, su ancla indica qué píxel de salida estamos calculando. Con tamaños impares se suele usar el centro porque es inequívoco. Los tamaños pares son posibles en algunas bibliotecas, pero obligan a declarar una convención y pueden introducir un desplazamiento aparente.",
-          "También existe una política de borde: fuera de la imagen no hay muestras reales. Rellenar, replicar o elegir un valor neutro puede cambiar los objetos que tocan el marco.",
+          "El ancla fija qué posición de la plantilla coincide con el píxel de salida. Una plantilla de alto y ancho impares tiene una celda central inequívoca; desplazar el ancla cambia la alineación.",
+          "La política de borde decide qué leer fuera del marco. Al erosionar un objeto blanco pegado al borde, rellenar con negro puede retirarlo una fila; replicar su borde blanco puede conservar esa fila. Donde la plantilla cabe entera, la elección del relleno no influye.",
         ],
         formula: {
           label: "PREGUNTA LOCAL",
@@ -44,7 +42,7 @@ export const sectorFourLessons: SectorLesson[] = [
     questions: [
       {
         id: "s4-foreground-convention",
-        prompt: "Una máscara tiene letras negras sobre fondo blanco y aplicas una operación pensando que el blanco es el objeto. ¿Cuál es el primer problema?",
+        prompt: "Quieres afinar letras negras sobre fondo blanco. Al erosionar la máscara, las letras se engrosan. ¿Qué comprobarías antes de cambiar el tamaño de la plantilla?",
         options: ["La resolución", "La polaridad del primer plano", "El formato PNG", "El número de épocas"],
         correctIndex: 1,
         feedback: [
@@ -57,18 +55,18 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         id: "s4-footprint-shape",
         prompt: "¿Qué parámetro expresa directamente qué vecinos participan en una operación morfológica?",
-        options: ["El learning rate", "El elemento estructurante", "La extensión del archivo", "La etiqueta de clase"],
+        options: ["El valor que codifica el blanco", "El elemento estructurante", "El número de objetos", "La etiqueta de clase"],
         correctIndex: 1,
         feedback: [
-          "No hay optimización ni aprendizaje en esta operación.",
+          "La codificación del blanco identifica el primer plano, no la disposición de los vecinos.",
           "Correcto: sus posiciones activas definen el vecindario consultado.",
-          "JPEG o PNG no define la geometría local del operador.",
+          "El recuento de objetos no fija qué posiciones se consultan alrededor de cada píxel.",
           "La morfología básica puede operar sin conocer clases semánticas.",
         ],
       },
       {
         id: "s4-even-anchor",
-        prompt: "¿Por qué suele preferirse un footprint de tamaño impar?",
+        prompt: "Para centrar el ancla de una plantilla morfológica, ¿qué ventaja tiene usar alto y ancho impares?",
         options: ["Tiene un centro inequívoco", "Siempre es más rápido", "Convierte RGB en gris", "Elimina cualquier ruido"],
         correctIndex: 0,
         feedback: [
@@ -98,8 +96,7 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Todos tienen que cumplir",
         paragraphs: [
-          "En binario, una erosión con un footprint lleno conserva el píxel central si todos los vecinos cubiertos pertenecen al objeto. Cerca del contorno alguno cae en el fondo, así que el borde retrocede.",
-          "Por eso puede borrar motas claras, separar un puente estrecho o adelgazar trazos. Esas tres descripciones son el mismo mecanismo visto desde tareas distintas.",
+          "Con blanco como objeto y el centro activo, la erosión deja blanco el píxel de salida solo si toda posición activa de la plantilla cae en blanco. Basta un vecino de fondo para que salga negro. En una mota o un puente más estrecho que la plantilla, esta puede no caber en ninguna posición.",
         ],
         formula: {
           label: "EROSIÓN BINARIA · INTUICIÓN",
@@ -111,14 +108,14 @@ export const sectorFourLessons: SectorLesson[] = [
         title: "El tamaño debe hablar el idioma del defecto",
         paragraphs: [
           "Un objeto desaparece cuando ya no contiene una copia completa del elemento estructurante. Por eso el tamaño del kernel debe relacionarse con píxeles reales del problema, resolución, distancia de cámara y tamaño mínimo válido.",
-          "Repetir una erosión aumenta el efecto. Varias iteraciones con una plantilla pequeña pueden equivaler a una plantilla mayor en casos concretos, pero la equivalencia depende de la forma, el borde y la implementación: no la des por universal.",
+          "En el interior, dos erosiones con un cuadrado 3×3 lleno y centrado exigen que todo un cuadrado 5×5 sea primer plano. Dos cruces 3×3, en cambio, alcanzan un rombo, no ese cuadrado. Antes de sustituir iteraciones, comprueba la forma efectiva, el ancla y el tratamiento del borde.",
         ],
       },
       {
         title: "Limpiar también puede destruir",
         paragraphs: [
-          "Si una grieta, vaso sanguíneo o tipografía fina es la señal útil, erosionar puede eliminarla. Mide no solo cuántas motas desaparecen, sino cuánto grosor, área o conectividad pierde la señal.",
-          "En los límites de la imagen, el resultado depende del valor asumido fuera. Un objeto pegado al marco puede encogerse de manera diferente que uno idéntico situado en el centro.",
+          "Compara las mismas máscaras antes y después de erosionar con anotaciones que distingan ruido de señal. Cuenta motas eliminadas, pero también trazos válidos perdidos, adelgazados o partidos.",
+          "Evalúa por separado los trazos pegados al marco y repite la comparación con la política de borde que usarás: el valor supuesto fuera de la imagen puede borrar un trazo que en el interior sobreviviría.",
         ],
       },
     ],
@@ -142,7 +139,7 @@ export const sectorFourLessons: SectorLesson[] = [
       },
       {
         id: "s4-erosion-purpose",
-        prompt: "¿Qué efecto es razonable esperar al erosionar un puente blanco de un píxel?",
+        prompt: "Dos regiones blancas están unidas por un puente horizontal de un píxel de grosor sobre fondo negro. ¿Qué le puede ocurrir al erosionar con un cuadrado lleno de 3×3?",
         options: ["Puede romperse", "Se vuelve más ancho", "Aumenta el número de canales", "Recupera detalle saturado"],
         correctIndex: 0,
         feedback: [
@@ -185,7 +182,7 @@ export const sectorFourLessons: SectorLesson[] = [
         title: "Con uno basta",
         paragraphs: [
           "La dilatación binaria se parece a un OR local: si cualquier vecino cubierto es primer plano, la salida se activa. El contorno avanza según las direcciones presentes en el elemento estructurante.",
-          "Puede cerrar una interrupción pequeña, engrosar texto o unir regiones cercanas. Que dos piezas se unan no demuestra que fueran el mismo objeto; solo demuestra que la distancia era menor que la escala impuesta.",
+          "Puede cerrar una interrupción o unir regiones cercanas. La unión solo indica que las expansiones alcanzaron a conectarse con esa plantilla y ese número de pasadas, no que las dos piezas fueran un mismo objeto físico.",
         ],
         formula: {
           label: "DILATACIÓN BINARIA · INTUICIÓN",
@@ -203,8 +200,7 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "También crece lo que no quieres",
         paragraphs: [
-          "Una mota blanca aislada se convierte en una mancha mayor al dilatar. Por eso, para limpiar ruido claro, suele erosionarse antes y dilatar después: esa composición recibe el nombre de apertura.",
-          "Si el primer plano está invertido, la misma matriz numérica puede parecer que encoge el objeto de interés. Describe siempre el conjunto sobre el que estás operando.",
+          "Dilatar un punto blanco aislado con un cuadrado 3×3 centrado le da nueve píxeles blancos si está lejos del marco. Para quitarlo, una apertura erosiona primero y dilata después: la mota no contiene el cuadrado, así que no deja ningún píxel desde el que volver a crecer.",
         ],
       },
     ],
@@ -240,12 +236,12 @@ export const sectorFourLessons: SectorLesson[] = [
       },
       {
         id: "s4-dilation-noise",
-        prompt: "¿Qué ocurre normalmente con una mota blanca aislada al dilatar?",
+        prompt: "Dilatas un píxel blanco aislado sobre fondo negro con una cruz de 3×3, lejos del marco. ¿Qué ocurre con la mota?",
         options: ["Desaparece", "Crece", "Cambia a negro sin más", "Se convierte en un histograma"],
         correctIndex: 1,
         feedback: [
           "Para retirar motas claras suele ser útil erosionar o abrir.",
-          "Correcto: cualquier píxel blanco extiende su influencia al vecindario.",
+          "Correcto: la cruz activa el punto y sus cuatro vecinos horizontales y verticales.",
           "No es una inversión de polaridad.",
           "El histograma es un resumen, no un tipo de píxel.",
         ],
@@ -270,8 +266,8 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Abrir deja pasar solo lo que cabe",
         paragraphs: [
-          "La apertura elimina componentes y salientes de primer plano demasiado pequeños para contener el footprint. La dilatación posterior recupera parte del tamaño de las estructuras que sí sobrevivieron, pero no resucita una mota que desapareció por completo.",
-          "Es anti-extensiva en la morfología binaria clásica: el resultado no añade primer plano fuera del original. Aplicarla dos veces con el mismo elemento es idempotente; después de la primera, una segunda no debería seguir cambiando la forma ideal.",
+          "En la apertura binaria clásica primero se erosiona y después se dilata con el elemento correspondiente. Una mota aislada donde no cabe la plantilla desaparece en la erosión: no queda desde dónde dilatarla. Las estructuras mayores recuperan parte de su contorno.",
+          "La apertura es anti-extensiva: el resultado está contenido en el primer plano original. Es idempotente: abrir otra vez con el mismo elemento no cambia el resultado.",
         ],
       },
       {
@@ -284,8 +280,7 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "No son botones de mejorar",
         paragraphs: [
-          "Apertura y cierre no son inversas exactas ni se cancelan. Ambas descartan información de forma controlada y su efecto depende de polaridad, orientación y escala.",
-          "Una secuencia abrir→cerrar puede quitar puntos claros y rellenar puntos oscuros, pero también redondear esquinas, separar puentes y fusionar huecos. Valida sobre rasgos que quieras proteger.",
+          "Abrir elimina detalles del primer plano donde no cabe el elemento; cerrar rellena detalles del fondo. Si una apertura borra una mota alejada de otras piezas, el cierre no guarda sus coordenadas ni sabe que deba reponerla. Invertir la polaridad intercambia qué detalles se tratan como objeto; girar o agrandar la plantilla cambia cuáles caben.",
         ],
         formula: {
           label: "COMPOSICIONES",
@@ -309,7 +304,7 @@ export const sectorFourLessons: SectorLesson[] = [
           "Esa secuencia define el cierre.",
           "Correcto: primero se retira lo que no contiene el footprint y luego se recupera la forma superviviente.",
           "Son operaciones útiles, pero no definen apertura morfológica.",
-          "Tampoco corresponde a la definición.",
+          "Restar y normalizar cambia intensidades; no comprueba dónde cabe una plantilla ni dilata lo que sobrevive.",
         ],
       },
       {
@@ -368,15 +363,14 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Top-hat: lo claro que no pudo quedarse",
         paragraphs: [
-          "El white top-hat resta la apertura a la imagen original. La apertura conserva estructuras claras grandes; el residual destaca puntos, líneas o brillos claros menores que la plantilla.",
-          "Puede ayudar con iluminación de fondo lenta, pero no reemplaza una validación: textura clara real y ruido también pueden aparecer en el residual.",
+          "White top-hat = original − apertura. Si la apertura sigue un fondo que varía lentamente pero elimina un reflejo estrecho, el fondo se cancela en la resta y el reflejo da un residuo positivo. Una mota de ruido clara de la misma escala también responderá.",
         ],
       },
       {
         title: "Black-hat: lo oscuro que el cierre tapó",
         paragraphs: [
           "El black-hat resta la imagen original del cierre. Muestra huecos, texto oscuro o valles locales que el cierre fue capaz de cubrir.",
-          "En ambos hats, «pequeño» no es absoluto: significa pequeño respecto a la forma y tamaño del elemento estructurante. Un kernel horizontal puede realzar trazos distintos a uno vertical.",
+          "La orientación cuenta: sobre fondo claro, un segmento vertical más largo que el grosor de una raya oscura horizontal puede cerrar esa raya. Un segmento paralelo a ella puede dejar intacto su interior. Por eso el residuo depende de la plantilla, no solo del nivel de gris.",
         ],
       },
     ],
@@ -394,8 +388,8 @@ export const sectorFourLessons: SectorLesson[] = [
         feedback: [
           "Esa resta es el white top-hat.",
           "Esa resta es el black-hat.",
-          "Correcto: separa las envolventes exterior e interior.",
-          "Sobel y morfología son familias distintas.",
+          "Correcto: el máximo local menos el mínimo local forma una banda donde cambia la intensidad.",
+          "Sobel estima derivadas por sumas ponderadas; restar sus componentes no calcula un rango local.",
         ],
       },
       {
@@ -404,7 +398,7 @@ export const sectorFourLessons: SectorLesson[] = [
         options: ["White top-hat", "Black-hat", "Solo cierre", "Inversa matricial"],
         correctIndex: 0,
         feedback: [
-          "Correcto: conserva lo claro que la apertura elimina.",
+          "Correcto: original menos apertura cancela el fondo y conserva el exceso de intensidad del reflejo.",
           "Black-hat destaca depresiones oscuras.",
           "El cierre puede modificar huecos, pero no entrega ese residual claro.",
           "No es un problema de resolver un sistema lineal.",
@@ -442,8 +436,7 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "El valle y el pico del vecindario",
         paragraphs: [
-          "La erosión en grises devuelve el mínimo cubierto: las regiones brillantes se reducen y las oscuras se expanden. La dilatación devuelve el máximo: los brillos se expanden y las zonas oscuras retroceden.",
-          "Como max y min no son operaciones lineales, no puedes representar este filtro con una simple suma ponderada ni esperar superposición. Responde bien a la forma de picos y valles, no al promedio.",
+          "Con una plantilla plana, la erosión elige el mínimo local y la dilatación, el máximo. En [20, 80, 30] devuelven 20 y 80. No son promedios lineales: el vecino elegido depende de las intensidades y puede cambiar de posición de una ventana a otra.",
         ],
         formula: {
           label: "FOOTPRINT PLANO",
@@ -454,15 +447,14 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Color: operar por canal puede inventar combinaciones",
         paragraphs: [
-          "Aplicar mínimos o máximos por separado a R, G y B puede tomar cada canal de un vecino diferente y producir un color que no existía en ningún píxel original. En color no hay un orden total tan natural como en escala de grises.",
-          "A menudo se trabaja sobre una máscara, luminancia u otro canal con significado. La elección depende de qué forma deseas preservar, no de una regla universal de «morfología RGB».",
+          "Si una ventana solo contiene rojo (255, 0, 0) y verde (0, 255, 0), el máximo independiente de cada canal RGB produce (255, 255, 0): amarillo, un color ausente. Para ampliar la silueta de un objeto se puede dilatar una máscara binaria; para ampliar brillos, trabajar sobre un canal de claridad.",
         ],
       },
       {
         title: "Tres ramas que conviene reconocer",
         paragraphs: [
-          "La reconstrucción morfológica deja crecer una imagen marcador, pero la limita mediante una máscara; sirve para recuperar componentes conectados sin la deformación de una dilatación libre. La esqueletización reduce una forma binaria a líneas centrales preservando su estructura esencial.",
-          "La transformada de distancia asigna a cada píxel del objeto su distancia al fondo. Es útil para grosor, centros y semillas de separación. Las veremos de nuevo cuando tratemos forma y segmentación; aquí debes reconocer qué pregunta responde cada familia.",
+          "En una reconstrucción binaria por dilatación, unas semillas crecen solo dentro de la máscara hasta recuperar el primer plano conectado a ellas. La esqueletización adelgaza el objeto a un trazado central que busca conservar sus conexiones.",
+          "La transformada de distancia asigna a cada píxel del objeto la distancia al fondo más cercano según la métrica elegida. Sus máximos interiores pueden servir como semillas para separar objetos que se tocan.",
         ],
       },
     ],
@@ -474,7 +466,7 @@ export const sectorFourLessons: SectorLesson[] = [
     questions: [
       {
         id: "s4-gray-erosion",
-        prompt: "Con footprint plano sobre grises, ¿qué estadístico local representa una erosión?",
+        prompt: "En una imagen de grises, erosionas con una plantilla plana (sin sumar pesos a las intensidades). ¿Qué estadístico de las posiciones activas da la salida?",
         options: ["Media", "Mediana", "Mínimo", "Desviación típica"],
         correctIndex: 2,
         feedback: [
@@ -503,7 +495,7 @@ export const sectorFourLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "No asigna significado semántico.",
-          "Correcto: permite localizar centros y estimar grosor.",
+          "Correcto: mide la distancia al fondo más cercano; los máximos interiores ayudan a localizar centros.",
           "No resume frecuencias de color.",
           "No hay optimización de parámetros.",
         ],
@@ -536,7 +528,7 @@ export const sectorFourLessons: SectorLesson[] = [
         title: "La salida es un mapa de enteros",
         paragraphs: [
           "Cada componente recibe una etiqueta entera; en OpenCV la etiqueta 0 representa el fondo. El número asignado puede depender del algoritmo y del orden de recorrido, así que no interpretes «componente 3» como una identidad estable entre imágenes.",
-          "connectedComponentsWithStats entrega además área, caja delimitadora y centroide. Esas medidas permiten filtrar motas o construir candidatos para una etapa posterior.",
+          "Para cada etiqueta, connectedComponentsWithStats da el área (número de píxeles), la caja alineada con los ejes (izquierda, arriba, ancho, alto) y el centroide (promedio de x e y de sus píxeles). El centroide no tiene por qué ser el centro de la caja ni caer dentro de la mancha.",
         ],
         formula: {
           label: "CONECTIVIDAD 2D",
@@ -548,7 +540,7 @@ export const sectorFourLessons: SectorLesson[] = [
         title: "Medir no equivale a reconocer",
         paragraphs: [
           "Un filtro por área puede eliminar componentes demasiado pequeños, pero también borra objetos válidos pequeños si la escala cambia. Una caja describe extensión, no orientación exacta ni forma interior.",
-          "En producción debes contemplar objetos que tocan el borde, agujeros, componentes fusionados y fragmentados. La calidad del etiquetado depende directamente de umbral y morfología anteriores.",
+          "Si el umbral corta un objeto en dos, se cuentan dos componentes; si un cierre une dos objetos, se cuenta uno. Filtrar por área no corrige ninguna de esas identidades. Revisa también objetos recortados por el marco: su área visible subestima la completa.",
         ],
       },
     ],
@@ -560,11 +552,11 @@ export const sectorFourLessons: SectorLesson[] = [
     questions: [
       {
         id: "s4-connectivity-diagonal",
-        prompt: "Dos píxeles blancos solo se tocan en diagonal. ¿Cómo se cuentan normalmente?",
+        prompt: "Una máscara solo contiene dos píxeles de primer plano, tocándose por una esquina. ¿Cuántos componentes dan las conectividades 4 y 8, sin contar el fondo?",
         options: ["Uno con 4 y dos con 8", "Dos con 4 y uno con 8", "Siempre uno", "Siempre dos"],
         correctIndex: 1,
         feedback: [
-          "Está invertido.",
+          "La vecindad de 4 solo comparte lados; la de 8 añade contactos por esquina, no al revés.",
           "Correcto: la diagonal solo pertenece a la vecindad de 8.",
           "Con conectividad 4 no existe ese enlace.",
           "Con conectividad 8 sí se consideran unidos.",
@@ -572,26 +564,26 @@ export const sectorFourLessons: SectorLesson[] = [
       },
       {
         id: "s4-label-meaning",
-        prompt: "El mapa asigna la etiqueta 3 a una mancha. ¿Qué significa por sí solo ese 3?",
-        options: ["Que pertenece a la clase 3", "Que es el tercer identificador del etiquetado", "Que tiene área 3", "Que su confianza es 0,3"],
+        prompt: "Al etiquetar los componentes conexos de una máscara, una mancha recibe el entero 3. ¿Qué significa por sí solo ese número?",
+        options: ["Que pertenece a la clase 3", "Que identifica ese componente dentro de este mapa", "Que tiene área 3", "Que su confianza es 0,3"],
         correctIndex: 1,
         feedback: [
           "Las clases semánticas requieren otra regla o modelo.",
-          "Correcto: es un ID interno para separar componentes.",
+          "Correcto: agrupa píxeles conectados de este mapa; la etiqueta 3 puede designar otra pieza en el siguiente fotograma.",
           "El área aparece en una estadística distinta.",
           "No representa una probabilidad.",
         ],
       },
       {
         id: "s4-component-stats",
-        prompt: "¿Cuál de estas medidas puede entregar connectedComponentsWithStats?",
-        options: ["Learning rate", "Área y caja delimitadora", "Arquitectura CNN", "Balance de blancos"],
+        prompt: "Al aplicar connectedComponentsWithStats de OpenCV a una máscara binaria, ¿qué medidas obtienes directamente para cada componente?",
+        options: ["Longitud exacta de su contorno", "Área y caja delimitadora", "Orientación de sus ejes principales", "Número de agujeros interiores"],
         correctIndex: 1,
         feedback: [
-          "No hay entrenamiento.",
-          "Correcto: también proporciona centroides por etiqueta.",
-          "No diseña una red neuronal.",
-          "La temperatura de color no es una estadística de componentes.",
+          "La caja no describe todo el contorno; para medir el perímetro hay que estimar esa frontera.",
+          "Correcto: cuenta píxeles y registra la caja alineada con los ejes; también devuelve el centroide.",
+          "La orientación requiere información adicional, por ejemplo los momentos de segundo orden.",
+          "Contar agujeros requiere analizar el fondo interior o la jerarquía de contornos.",
         ],
       },
     ],
@@ -614,8 +606,7 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Los bins son cubos de valores",
         paragraphs: [
-          "Para uint8, 256 bins pueden separar cada intensidad. Con 16 bins, cada cubo resume aproximadamente 16 valores y pierde detalle a cambio de ser más compacto y, a veces, más robusto al ruido.",
-          "El rango importa. En OpenCV se utiliza habitualmente [0, 256) para incluir intensidades 0…255: el extremo izquierdo entra y el derecho queda fuera. Un rango mal declarado puede descartar o colocar mal muestras.",
+          "Un bin es un intervalo de intensidades. En [0, 256), 0 entra y 256 no: quedan los 256 enteros uint8, incluido 255. Con 256 bins uniformes se distingue cada nivel. Con 16, el primero agrupa 0–15 y el último 240–255: se gana compacidad a costa de no distinguir valores dentro de un intervalo.",
         ],
         formula: {
           label: "CONTEO",
@@ -626,15 +617,14 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Conteos y proporciones responden distinto",
         paragraphs: [
-          "El histograma bruto crece con el número de píxeles. Para comparar recortes de tamaños distintos suele normalizarse por suma, norma u otra convención compatible con la métrica elegida.",
-          "Una densidad o proporción permite comparar distribución, pero ya no te dice directamente cuántos píxeles reales había. Conserva ambos datos cuando el área también importa.",
+          "El conteo indica cuántos píxeles caen en cada intervalo; dividido por el número total contado da una proporción. Si hay 20 de 100 en un recorte y 40 de 200 en otro, ese bin ocupa el 20 % en ambos. Compara proporciones con los mismos intervalos y conserva aparte el total si también importa el área.",
         ],
       },
       {
         title: "No contiene un mapa",
         paragraphs: [
           "Si barajas todos los píxeles, el histograma no cambia aunque la imagen quede irreconocible. Tampoco sabe si dos tonos están juntos, forman un borde o pertenecen a objetos distintos.",
-          "Otsu minimiza la varianza intraclase ponderada (o maximiza la varianza entre clases) para elegir un umbral global. Supone que una separación tonal en dos grupos es útil para la tarea; no distingue posiciones ni corrige una iluminación que cambia según la zona.",
+          "Otsu elige el umbral que mejor separa dos grupos tonales en ese histograma. Con los mismos conteos y la misma regla de desempate elegirá el mismo umbral tras barajar los píxeles, aunque ya no haya objetos reconocibles. No evalúa forma, conectividad ni posición.",
         ],
       },
     ],
@@ -650,7 +640,7 @@ export const sectorFourLessons: SectorLesson[] = [
         options: ["Permanece igual", "Se invierte", "Duplica sus bins", "Se convierte en RGB"],
         correctIndex: 0,
         feedback: [
-          "Correcto: solo cuenta valores, no coordenadas.",
+          "Correcto: se conserva el número de píxeles de cada intensidad, aunque sus posiciones cambien.",
           "No se ha cambiado la intensidad de ningún píxel.",
           "El número de bins es una decisión de cálculo.",
           "Reordenar posiciones no añade canales.",
@@ -670,11 +660,11 @@ export const sectorFourLessons: SectorLesson[] = [
       },
       {
         id: "s4-hist-normalize",
-        prompt: "Quieres comparar la distribución de dos recortes con áreas distintas. ¿Qué suele ser necesario?",
+        prompt: "Dos recortes de distinto tamaño usan los mismos intervalos de intensidad. Para comparar fracciones de píxeles y no cantidades absolutas, ¿qué haces?",
         options: ["Normalizar los histogramas", "Aumentar ambos a 4K", "Ordenar los píxeles por x", "Entrenar durante más épocas"],
         correctIndex: 0,
         feedback: [
-          "Correcto: evita que el tamaño domine el conteo, siempre según la métrica elegida.",
+          "Correcto: divide cada conteo por el total del recorte para comparar proporciones.",
           "Cambiar resolución altera datos y no resuelve conceptualmente la escala de conteos.",
           "El histograma no conserva x.",
           "No es una operación aprendida.",
@@ -700,8 +690,7 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Marginal no significa color completo",
         paragraphs: [
-          "Un histograma R, otro G y otro B son tres distribuciones marginales. Dos imágenes pueden compartirlas y, sin embargo, combinar los canales de forma diferente en cada píxel.",
-          "Un histograma 2D de dos canales cuenta pares, por ejemplo tono y saturación. Con 30 bins de H y 32 de S ya hay 960 celdas; añadir dimensiones multiplica memoria y exige más datos para llenar el espacio.",
+          "Contar el tono H y la saturación S por separado no dice si los rojos son saturados o apagados. El histograma conjunto cuenta el par (H, S) de cada píxel. Con 30 intervalos de tono y 32 de saturación tiene 30 × 32 = 960 celdas, frente a 30 + 32 = 62 conteos separados; necesita más muestras para estimarlas.",
         ],
         formula: {
           label: "HISTOGRAMA CONJUNTO",
@@ -719,8 +708,8 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "La máscara define de quién haces inventario",
         paragraphs: [
-          "calcHist puede recibir una máscara para contar solo una región de interés. Si incluyes un fondo enorme, su distribución puede ocultar justo el objeto que querías describir.",
-          "Para comparar entre imágenes, conserva el mismo espacio de color, rangos, bins, máscara conceptual y normalización. Cambiar cualquiera convierte la comparación en otra pregunta.",
+          "En cv.calcHist se cuenta un píxel si el valor de la máscara uint8 en esa posición no es cero. Un 255 lo selecciona, no le da 255 votos. Así el fondo no domina el histograma de un objeto pequeño.",
+          "Usa en ambas imágenes el mismo criterio de selección, espacio y orden de canales, intervalos y normalización. Dos bins con el mismo índice solo son comparables si representan el mismo intervalo.",
         ],
       },
     ],
@@ -744,7 +733,7 @@ export const sectorFourLessons: SectorLesson[] = [
       },
       {
         id: "s4-hue-low-saturation",
-        prompt: "¿Cuándo suele ser poco fiable interpretar el tono H?",
+        prompt: "En el espacio de color HSV, ¿cuándo resulta poco fiable seleccionar un objeto por su tono H?",
         options: ["Con saturación muy baja", "Con ancho par", "Al usar una máscara", "Cuando el área es grande"],
         correctIndex: 0,
         feedback: [
@@ -757,12 +746,12 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         id: "s4-hist-mask",
         prompt: "Quieres describir el color de una camiseta, pero ocupa el 10 % de la foto. ¿Qué evita que domine el fondo?",
-        options: ["Una máscara sobre la camiseta", "Un kernel Sobel", "Aumentar el learning rate", "Guardar como JPEG"],
+        options: ["Una máscara sobre la camiseta", "Un kernel Sobel", "Normalizar el histograma de toda la foto por su suma", "Guardar como JPEG"],
         correctIndex: 0,
         feedback: [
           "Correcto: el histograma contará solo la región relevante.",
           "Sobel busca cambios locales, no selecciona automáticamente la prenda.",
-          "No se está entrenando nada.",
+          "Dividir por la suma cambia los conteos a proporciones, pero el fondo aún aporta el 90 % de las muestras.",
           "El formato no separa objeto y fondo.",
         ],
       },
@@ -786,8 +775,8 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "La CDF es un contador acumulado",
         paragraphs: [
-          "La función de distribución acumulada o CDF suma el histograma desde los tonos bajos hasta el valor actual. Tras normalizarla, puede usarse como LUT: los tonos frecuentes ocupan más espacio de salida y los rangos comprimidos se separan.",
-          "En datos discretos el histograma final no tiene por qué quedar perfectamente plano. Si miles de píxeles comparten exactamente el mismo valor, un mapeo puntual no puede repartirlos sin introducir otra información.",
+          "La función de distribución acumulada, CDF(t), es la fracción de píxeles con intensidad menor o igual que t: suma los conteos hasta t y divide por el total. La ecualización escala esa acumulada al rango de salida y redondea para obtener una tabla de consulta.",
+          "Donde abundan tonos vecinos, la curva crece más deprisa y puede separarlos. Pero todos los píxeles con el mismo valor consultan la misma entrada: ni los empates ni el redondeo permiten garantizar un histograma plano.",
         ],
         formula: {
           label: "MAPEO GLOBAL",
@@ -805,7 +794,7 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Una decisión global puede perjudicar una zona",
         paragraphs: [
-          "Si fondo y cara, cielo y suelo o metal y defecto tienen distribuciones distintas, una única CDF puede mejorar una región y sobreexponer o comprimir otra. También puede amplificar ruido en rangos muy poblados.",
+          "Una curva global depende de los conteos de toda la imagen. Asigna más contraste a niveles muy poblados y puede comprimir tonos cercanos de una región pequeña. Si los niveles frecuentes son ruido del fondo, también realza ese ruido.",
           "En color, ecualizar R, G y B por separado suele cambiar el equilibrio cromático. Es más habitual trabajar sobre luminancia o valor dentro de un espacio elegido conscientemente, comprobando aun así los cambios de color.",
         ],
       },
@@ -819,13 +808,13 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         id: "s4-equalization-cdf",
         prompt: "¿Qué función utiliza la ecualización global como base de su mapeo?",
-        options: ["La CDF del histograma", "La derivada de Sobel", "La matriz de confusión", "El learning rate"],
+        options: ["La distribución acumulada (CDF) de intensidades", "La derivada espacial de la intensidad", "Solo la intensidad media", "La desviación estándar de cada ventana"],
         correctIndex: 0,
         feedback: [
           "Correcto: el conteo acumulado normalizado determina la nueva intensidad.",
           "Sobel estima gradientes espaciales.",
-          "Esa matriz evalúa clasificación.",
-          "No hay un proceso de optimización.",
+          "Una media no indica qué fracción de los píxeles queda por debajo de cada nivel de gris.",
+          "La ecualización global usa conteos de toda la imagen, no la dispersión de ventanas locales.",
         ],
       },
       {
@@ -872,22 +861,22 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Una CDF por barrio",
         paragraphs: [
-          "La imagen se divide en teselas. Cada una construye su histograma y su CDF, de modo que una zona oscura no queda gobernada por millones de píxeles de otra zona brillante.",
-          "Teselas más pequeñas adaptan el contraste a variaciones rápidas, pero tienen menos muestras, son más sensibles al ruido y pueden generar aspecto local exagerado. El parámetro tileGridSize expresa cuántas teselas usa OpenCV, no el tamaño de cada píxel de la tesela.",
+          "CLAHE ecualiza el contraste usando histogramas locales. En OpenCV, tileGridSize=(8, 4) significa 8 teselas a lo ancho y 4 a lo alto, no teselas de 8×4 píxeles. Cada zona dispone así de un mapeo que depende de sus propios tonos.",
+          "Con la imagen fija, aumentar el número de teselas reduce su tamaño: sigue mejor cambios locales de luz, pero cada histograma tiene menos muestras y puede realzar fluctuaciones de ruido.",
         ],
       },
       {
         title: "Limitar antes de redistribuir",
         paragraphs: [
-          "AHE puro puede convertir pequeñas fluctuaciones de ruido en contraste fuerte. CLAHE recorta los bins que superan un límite y redistribuye el excedente antes de formar la CDF.",
-          "El significado numérico exacto del clip limit depende de la biblioteca y su normalización. Aprende la dirección del efecto y verifica la API concreta; copiar un valor entre OpenCV y scikit-image no garantiza el mismo resultado.",
+          "Antes de acumular el histograma local, CLAHE recorta los conteos que superan un límite y redistribuye el excedente entre los bins. Así reduce los saltos de la curva y evita amplificar tanto pequeñas variaciones dominantes. Recorta conteos, no intensidades de la imagen.",
+          "El parámetro clip limit puede estar normalizado por área de tesela o número de intervalos. El mismo valor numérico en dos bibliotecas no implica el mismo tope efectivo.",
         ],
       },
       {
         title: "Interpolar para esconder las costuras",
         paragraphs: [
-          "Si cada píxel usara únicamente el mapeo de su tesela, aparecerían cambios bruscos en los límites. OpenCV interpola entre transformaciones vecinas para suavizar esas costuras.",
-          "Más contraste local no siempre ayuda al sistema final. Puede crear textura en fondo, alterar estadísticas respecto al entrenamiento y elevar falsos positivos. Evalúa la tarea, no solo si la imagen parece más nítida.",
+          "Dos teselas pueden asignar salidas distintas a un mismo gris. OpenCV interpola las salidas que sus tablas dan a la intensidad del píxel, ponderándolas por posición. Suaviza así las costuras sin promediar las intensidades de píxeles vecinos.",
+          "Si el contraste local realza ruido o textura de fondo con aspecto de defecto, un detector puede generar más falsas alarmas. Compara detecciones con y sin CLAHE en las mismas imágenes.",
         ],
         formula: {
           label: "TRES CONTROLES",
@@ -921,19 +910,19 @@ export const sectorFourLessons: SectorLesson[] = [
         correctIndex: 0,
         feedback: [
           "Correcto: limita cuánto puede concentrarse y amplificarse una distribución local.",
-          "No es un crop.",
+          "No se quitan filas ni columnas: el límite actúa sobre el número de muestras acumuladas en cada bin.",
           "La conectividad pertenece al etiquetado de componentes.",
           "Conserva el número de píxeles.",
         ],
       },
       {
         id: "s4-clahe-transfer",
-        prompt: "¿Puedes copiar sin más clipLimit=2 entre OpenCV y otra biblioteca esperando el mismo resultado?",
+        prompt: "Al trasladar un ajuste de CLAHE de OpenCV a otra biblioteca, ¿basta copiar clipLimit=2 para conservar el mismo límite de contraste?",
         options: ["Sí, siempre", "No: la parametrización puede estar normalizada de otra forma", "Solo en RGB", "Sí, si las teselas son impares"],
         correctIndex: 1,
         feedback: [
           "Las APIs pueden definir y normalizar el parámetro de forma diferente.",
-          "Correcto: consulta la documentación y valida visual y cuantitativamente.",
+          "Correcto: comprueba a qué conteo efectivo corresponde el parámetro, además del tamaño de tesela y los bins.",
           "El problema de equivalencia no depende de tener tres canales.",
           "La paridad no unifica las convenciones de distintas implementaciones.",
         ],
@@ -958,8 +947,8 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "La dirección de la métrica no siempre coincide",
         paragraphs: [
-          "OpenCV ofrece correlación, chi-cuadrado, intersección y distancia de Bhattacharyya, entre otras. En correlación e intersección, un valor mayor suele indicar más coincidencia; en chi-cuadrado o Bhattacharyya, un valor menor indica mayor similitud.",
-          "Normaliza de forma compatible, trata bins vacíos y calibra umbrales con datos representativos. Un número aislado no tiene significado universal entre métricas distintas.",
+          "Con histogramas comparables, busca una correlación o intersección mayor, pero una distancia chi-cuadrado o Bhattacharyya menor. Por ejemplo, con histogramas de suma 1, la intersección suma el mínimo de cada par de bins y llega a 1 para dos histogramas idénticos.",
+          "Iguala canales, intervalos y normalización; comprueba cómo trata la implementación los bins vacíos. Un umbral fijado para una distancia no se traslada directamente a otra ni a una similitud.",
         ],
       },
       {
@@ -977,8 +966,8 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         title: "Construye desde el fallo esperado",
         paragraphs: [
-          "Ejemplo: para contar tabletas claras sobre una cinta oscura podrías normalizar iluminación, umbralizar, abrir motas, cerrar pequeños huecos y etiquetar componentes. Pero si las tabletas se tocan, el cierre puede fusionarlas y necesitarás distancia o watershed.",
-          "En una entrevista explica señal útil, perturbaciones, escala en píxeles, coste, parámetros, ablaciones y métrica final. Compara al menos un baseline sin el paso propuesto: una imagen más bonita no demuestra mejor detección.",
+          "En una cinta oscura, un umbral puede separar las tabletas claras del fondo. Una apertura elimina motas claras si son menores que la plantilla; un cierre rellena agujeros pequeños. Cuenta los componentes de primer plano y compara con el recuento anotado.",
+          "Si dos tabletas separadas se convierten en un componente, reduce u omite el cierre y repite sobre las mismas imágenes. Si ya se tocaban antes, puedes usar máximos de distancia al fondo como semillas de watershed para intentar separarlas; comprueba que no divida una tableta en dos.",
         ],
       },
     ],
@@ -990,7 +979,7 @@ export const sectorFourLessons: SectorLesson[] = [
     questions: [
       {
         id: "s4-compare-direction",
-        prompt: "¿Cuál afirmación es correcta al comparar histogramas con OpenCV?",
+        prompt: "Buscas el histograma más parecido a una referencia con cv.compareHist. ¿Cómo interpretas el valor devuelto al cambiar de métrica?",
         options: ["Todas las métricas mejoran al crecer", "La dirección depende de la métrica", "No hace falta normalizar nunca", "El resultado siempre es una probabilidad"],
         correctIndex: 1,
         feedback: [
@@ -1003,13 +992,13 @@ export const sectorFourLessons: SectorLesson[] = [
       {
         id: "s4-backprojection-output",
         prompt: "¿Qué entrega directamente la retroproyección de un histograma de color?",
-        options: ["Un mapa de respuesta por píxel", "Una clase ImageNet", "Una nube de puntos 3D", "Una arquitectura CNN"],
+        options: ["Un mapa de respuesta por píxel", "Una caja alrededor de cada objeto", "Una probabilidad calibrada de pertenencia", "Un identificador para cada componente conectado"],
         correctIndex: 0,
         feedback: [
           "Correcto: los píxeles compatibles con la distribución objetivo reciben mayor respuesta.",
-          "No incluye un clasificador semántico.",
-          "No estima profundidad.",
-          "Es una operación de imagen, no un diseño de red.",
+          "Un conjunto de píxeles de respuesta alta aún no delimita automáticamente una caja.",
+          "El valor depende de los conteos y de la normalización, no de una calibración frente a etiquetas reales.",
+          "La retroproyección no agrupa píxeles vecinos; un etiquetado sería un paso posterior.",
         ],
       },
       {

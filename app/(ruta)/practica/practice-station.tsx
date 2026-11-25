@@ -249,7 +249,8 @@ export function PracticeStation({ initialStage, unknownStage }: { initialStage: 
               </div>}
               <div className="practice-why-right">
                 <span><CheckCircle2 aria-hidden="true" /> {answer === active.correctIndex ? "Por qué has acertado" : "Por qué esta es la respuesta correcta"}</span>
-                <p><strong>{active.options[active.correctIndex]}.</strong> {active.feedback[active.correctIndex]}</p>
+                <p><strong>{active.options[active.correctIndex]}</strong></p>
+                <p>{active.feedback[active.correctIndex]}</p>
               </div>
             </div>}
             {!revealed && <button className="practice-primary" type="button" onClick={checkChoice} disabled={answer === null}>Comprobar respuesta</button>}
@@ -262,7 +263,7 @@ export function PracticeStation({ initialStage, unknownStage }: { initialStage: 
             </button>}
             {revealed && <div className="practice-feedback" role="status">
               <div className="practice-why-right"><span><BookOpen aria-hidden="true" /> Solución orientativa</span><p className="practice-solution">{active.solution}</p></div>
-              <div className="practice-rubric"><strong>Comprueba si has incluido:</strong><ul>{active.rubric.map(point => <li key={point}>{point}</li>)}</ul></div>
+              {active.rubric && <div className="practice-rubric"><strong>Comprueba si has incluido:</strong><ul>{active.rubric.map(point => <li key={point}>{point}</li>)}</ul></div>}
               <p className="practice-honesty">Las respuestas abiertas se revisan contigo; la aplicación no interpreta tu texto ni finge corregirlo automáticamente.</p>
               {!evaluated && <div className="practice-self-check">
                 <button type="button" onClick={() => assessOpen(false)}><RotateCcw aria-hidden="true" /> Necesito repasarlo</button>

@@ -27,7 +27,7 @@ export const numericalPractice: PracticeChoice[] = [
   example(v => {
     const h = 64 + v, w = 128 + v, pixels = h * w;
     return q("rgb-bytes", "01.03", v, "RGB uint8 sin compresión: H = " + h + ", W = " + w + ", C = 3. ¿Cuántos bytes ocupan los valores de píxel?",
-      pixels * 3, "H × W × C valores de un byte cada uno; no incluye cabeceras ni metadatos.",
+      pixels * 3, `${h} × ${w} × 3 componentes de un byte. Se cuentan los datos del array, no el archivo ni sus metadatos.`,
       [pixels, "Eso supone un único canal, pero RGB tiene tres."],
       [pixels * 8, "Has tratado bits por canal como bytes por píxel."],
       [pixels * 4, "Cuatro canales serían RGBA, no el RGB indicado."]);
@@ -36,12 +36,12 @@ export const numericalPractice: PracticeChoice[] = [
     const h = 120 + v, w = 200 + v;
     return q("broadcast", "02.02", v, "Una imagen RGB tiene shape (H, W, C) = (" + h + ", " + w + ", 3). ¿Qué shape produce sumarle un vector de shape (3,)?",
       "(" + h + ", " + w + ", 3)", "El vector se alinea desde la derecha con C = Channels/canales y se aplica a cada píxel.",
-      ["(3,)", "El vector se aplica a todos los píxeles; no reduce la imagen."],
+      ["(3,)", "La suma usa las tres componentes en cada posición; no reduce la imagen a un solo píxel."],
       ["(" + h + ", " + w + ")", "La suma no elimina el eje de canales."],
       ["Error por shapes", "Los últimos ejes valen 3 y 3; el resto del vector se trata como dimensiones 1."]);
   }),
-  example(v => q("l2", "02.03", v, "Entre (0, 0) y (" + 3 * v + ", " + 4 * v + "), ¿cuál es la distancia L2?",
-    5 * v, "La raíz de (3n)² + (4n)² es 5n.",
+  example(v => q("l2", "02.03", v, "Entre (0, 0) y (" + 3 * v + ", " + 4 * v + "), ¿cuál es la distancia euclídea (L2)?",
+    5 * v, `Las diferencias son ${3*v} y ${4*v}; por Pitágoras, √(${3*v}²+${4*v}²)=${5*v}.`,
     [7 * v, "Eso es L1: sumar desplazamientos absolutos."],
     [25 * v * v, "Es la distancia al cuadrado; falta la raíz."],
     [4 * v, "Es la norma L∞, el mayor desplazamiento individual."])),
@@ -61,7 +61,7 @@ export const numericalPractice: PracticeChoice[] = [
   example(v => {
     const length = 4 + v;
     return q("erode-run", "04.02", v, "Una franja 1D de " + length + " unos está rodeada de ceros. Con erosión por ventana de tres posiciones, ¿cuántos unos quedan?",
-      length - 2, "Se pierden los dos extremos; solo sobreviven centros con tres vecinos positivos.",
+      length - 2, "Solo queda un uno cuando el centro y sus dos vecinos son unos. Se pierde una posición por cada extremo.",
       [length + 2, "Eso describe una dilatación del intervalo."],
       [length, "Los extremos no tienen tres unos bajo la ventana."],
       [length - 1, "La erosión elimina un extremo a cada lado."]);
@@ -85,7 +85,7 @@ export const numericalPractice: PracticeChoice[] = [
   example(v => {
     const length = 1001 + 10 * v, count = Math.ceil((length - 400) / 300) + 1;
     return q("tiles-count", "05.09", v, "Eje de " + length + " px: tiles de 400 px, paso 300 px. Empieza en 0 y añade un último tile pegado al borde si hace falta. ¿Cuántos inicios distintos?",
-      count, "Cuenta 0, los pasos de 300 y el último inicio en L − 400 para cubrir el borde.",
+      count, `Hay recortes que empiezan en 0, 300 y 600. Falta el que empieza en ${length}−400=${length-400} para cubrir el borde derecho.`,
       [count - 1, "Falta el tile final que cubre el borde derecho."],
       [count + 1, "Has contado un inicio adicional después de cubrir el borde."],
       [count - 2, "Has omitido dos posiciones del recorrido solapado; la longitud no quedaría cubierta."]);
@@ -99,19 +99,19 @@ export const numericalPractice: PracticeChoice[] = [
       [1, "Hay varios pacientes independientes, no un único grupo."]);
   }),
   example(v => q("knn-l1", "06.04", v, "¿Cuál es la distancia L1 entre (" + v + ", 0) y (0, " + 2 * v + ")?",
-    3 * v, "Suma las dos diferencias absolutas: n + 2n.",
+    3 * v, `La distancia Manhattan suma las diferencias absolutas: |${v}−0| + |0−${2*v}| = ${3*v}.`,
     [Math.sqrt(5) * v + "", "Eso se aproxima a L2, que usa cuadrados y raíz."],
     [v, "Falta la diferencia del segundo eje."],
     [2 * v, "Falta la diferencia del primer eje."])),
   example(v => {
     const n = 3 + v, m = 4 + v % 7;
     return q("dense-params", "07.01", v, "Capa densa con " + n + " entradas, " + m + " salidas y un sesgo por salida. ¿Cuántos parámetros?",
-      (n + 1) * m, "Hay n × m pesos y m sesgos.",
+      (n + 1) * m, `Cada salida usa ${n} pesos y un sesgo. En total, ${m} × (${n}+1) = ${(n+1)*m} parámetros.`,
       [n * m, "Has omitido un sesgo para cada neurona de salida."],
       [n + m, "Sumar dimensiones no cuenta todas las conexiones."],
       [n * m + 1, "Hay m sesgos, no un único sesgo para toda la capa."]);
   }),
-  example(v => q("relu", "07.02", v, "ReLU aplicada a (" + -v + ", 0, " + (v + 2) + ") produce...",
+  example(v => q("relu", "07.02", v, "¿Qué vector devuelve ReLU aplicada a (" + -v + ", 0, " + (v + 2) + ")?",
     "(" + 0 + ", 0, " + (v + 2) + ")", "ReLU(x) = max(0, x) en cada componente.",
     ["(" + -v + ", 0, " + (v + 2) + ")", "ReLU sustituye las entradas negativas por cero."],
     ["(" + v + ", 0, " + (v + 2) + ")", "ReLU no toma valor absoluto de los negativos."],
@@ -119,7 +119,7 @@ export const numericalPractice: PracticeChoice[] = [
   example(v => {
     const n = 101 + 10 * v, batches = Math.ceil(n / 16);
     return q("steps-epoch", "08.01", v, n + " ejemplos, batch size 16, sin reemplazo ni descarte del último batch y con una actualización por batch. ¿Cuántos pasos de optimizador hay por época?",
-      batches, "El último batch también cuenta: ceil(N/16).",
+      batches, `Hay ${Math.floor(n/16)} lotes completos y uno con los ${n%16} ejemplos restantes; cada uno da un paso.`,
       [batches - 1, "Eso descarta el último batch incompleto."],
       [n, "Un paso procesa un batch, no un solo ejemplo."],
       [batches + 1, "Has contado un batch de más tras consumir los ejemplos."]);
@@ -134,8 +134,8 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const n = 31 + 2 * v, output = 16 + v;
-    return q("conv-output", "09.02", v, "Eje de tamaño " + n + ", kernel 3, padding 1 y stride 2, sin dilatación. ¿Tamaño de salida de la convolución?",
-      output, "floor((N + 2p − k)/s) + 1.",
+    return q("conv-output", "09.02", v, "Una convolución recorre un eje de tamaño " + n + ", kernel 3, padding 1 y stride 2 (un píxel de relleno por lado y un salto de dos posiciones). Sin dilatación, ¿cuántas posiciones de salida hay?",
+      output, `El eje con relleno mide ${n+2}. El filtro de 3 cabe desde 0 hasta ${n-1} en pasos de 2: son ${output} posiciones contando la primera.`,
       [output - 1, "Has omitido el padding o la última posición válida."],
       [n, "El stride 2 reduce la resolución."],
       [output + 1, "El cálculo de posiciones usa suelo, no techo adicional."]);
@@ -150,16 +150,16 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const tp = 20 + v;
-    return q("precision", "10.04", v, "TP = " + tp + ", FP = 10 y FN = 5. ¿Cuál es la precision de la clase positiva?",
-      ratio(tp, tp + 10), "Precision = TP/(TP + FP).",
+    return q("precision", "10.04", v, "Para la clase «defecto»: TP = " + tp + ", FP = 10 y FN = 5 (aciertos, falsas alarmas y defectos omitidos). ¿Cuál es la precisión entre las alarmas emitidas?",
+      ratio(tp, tp + 10), `De ${tp+10} alarmas, ${tp} eran defectos. La precisión es TP/(TP+FP).`,
       [ratio(tp, tp + 5), "Ese denominador corresponde a recall, que usa FN."],
       [ratio(10, tp + 10), "Eso es la proporción de falsos positivos entre predicciones positivas."],
       [ratio(tp, tp + 15), "Has sumado FN aunque precision solo considera las predicciones positivas."]);
   }),
   example(v => {
     const tp = 20 + v;
-    return q("recall", "10.04", v, "TP = " + tp + ", FP = 10 y FN = 5. ¿Cuál es el recall de la clase positiva?",
-      ratio(tp, tp + 5), "Recall = TP/(TP + FN).",
+    return q("recall", "10.04", v, "Para la clase «defecto»: TP = " + tp + ", FP = 10 y FN = 5 (aciertos, falsas alarmas y defectos omitidos). ¿Qué proporción de los defectos reales se detectó (recall)?",
+      ratio(tp, tp + 5), `Detectas ${tp} de ${tp+5} defectos reales. La sensibilidad es TP/(TP+FN).`,
       [ratio(tp, tp + 10), "Eso es precision: incluye FP en el denominador."],
       [ratio(5, tp + 5), "Es la tasa de positivos omitidos, el complemento del recall."],
       [ratio(tp, tp + 15), "FP no forma parte de los positivos reales."]);
@@ -174,7 +174,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const ox = 100 + v, oy = 40 + v;
-    return q("tile-global", "11.01", v, "Tile con origen (" + ox + ", " + oy + "); caja xyxy local (" + v + ", " + 2 * v + ", " + (v + 20) + ", " + (2 * v + 10) + "). ¿Caja global?",
+    return q("tile-global", "11.01", v, "Recorte sin cambio de escala, con origen (" + ox + ", " + oy + "); caja xyxy local (" + v + ", " + 2 * v + ", " + (v + 20) + ", " + (2 * v + 10) + "). ¿Qué coordenadas tienen sus dos esquinas en la foto original?",
       "(" + (ox + v) + ", " + (oy + 2 * v) + ", " + (ox + v + 20) + ", " + (oy + 2 * v + 10) + ")",
       "Suma el origen a ambas esquinas, manteniendo anchura y altura.",
       ["(" + v + ", " + 2 * v + ", " + (v + 20) + ", " + (2 * v + 10) + ")", "Son coordenadas locales, sin el origen del tile."],
@@ -191,7 +191,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const length = 100 + v;
-    return q("cer", "12.05", v, "Referencia OCR de " + length + " caracteres: hay " + v + " sustituciones y ninguna inserción o borrado. ¿CER?",
+    return q("cer", "12.05", v, "Al comparar una transcripción automática con una referencia de " + length + " caracteres, basta sustituir " + v + " carácter, sin insertar ni borrar ninguno. ¿Cuál es la tasa de error por carácter (CER)?",
       ratio(v, length), "CER = distancia de edición dividida por longitud de referencia.",
       [ratio(v, 100), "El denominador es la longitud real de esta referencia, no cien por defecto."],
       [ratio(length, v), "Has invertido numerador y denominador."],
@@ -223,8 +223,8 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const f = 800 + 10 * v, d = 40 + v, depth = (f * 0.1 / d).toFixed(3) + " m";
-    return q("stereo-depth", "14.05", v, "Estéreo rectificado: focal " + f + " px, baseline 0,1 m, disparidad " + d + " px. ¿Profundidad aproximada?",
-      depth, "Z = f × baseline / disparidad; px se cancelan y quedan metros.",
+    return q("stereo-depth", "14.05", v, "En dos cámaras estéreo rectificadas, la focal horizontal es " + f + " px, la separación entre cámaras es 0,1 m y un punto cambia " + d + " columnas de una foto a la otra. Con Z=fB/d, ¿qué profundidad estimas en metros?",
+      depth, `La disparidad d es ${d} px y B es la separación. Z=(${f} px × 0,1 m)/${d} px ≈ ${depth}.`,
       [(f * d / 0.1).toFixed(3) + " m", "Has multiplicado por la disparidad en lugar de dividir."],
       [(d / (f * 0.1)).toFixed(3) + " m", "Has invertido la relación profundidad-disparidad."],
       [(f * 0.1).toFixed(3) + " m", "Falta dividir por la disparidad medida."]);
@@ -247,7 +247,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const batch = 8 + v;
-    return q("batch-throughput", "16.02", v, "Un batch de " + batch + " imágenes tarda 0,2 s de extremo a extremo. En régimen continuo y sin cuello externo, ¿throughput aproximado?",
+    return q("batch-throughput", "16.02", v, "Un batch de " + batch + " imágenes tarda 0,2 s. Si el dispositivo procesa un lote tras otro sin pausas ni solapamiento, ¿cuántas imágenes completa por segundo (throughput)?",
       5 * batch + " imágenes/s", "Divide imágenes del batch entre 0,2 segundos.",
       [batch / 5 + " imágenes/s", "Has multiplicado por el tiempo en vez de dividir."],
       [batch + " imágenes/s", "Ese número correspondería a un batch por segundo."],
@@ -255,7 +255,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const fov = 100 + v;
-    return q("crack-resolution", "17.02", v, "Una cámara ve " + fov + " mm en 2000 px de ancho. Una grieta mide 0,2 mm. ¿Cuántos píxeles ocupa en teoría?",
+    return q("crack-resolution", "17.02", v, "Una cámara ve " + fov + " mm en 2000 px de ancho. Una grieta mide 0,2 mm de grosor horizontal en ese plano frontal. ¿A cuántos píxeles de ancho corresponde?",
       (400 / fov).toFixed(2) + " px", "Píxeles = (ancho de defecto / campo de visión) × 2000.",
       [(2000 / fov).toFixed(2) + " px", "Son píxeles por milímetro; falta multiplicar por 0,2 mm."],
       [(0.2 * fov / 2000).toFixed(2) + " px", "Has invertido la conversión espacial."],
@@ -279,7 +279,7 @@ export const numericalPractice: PracticeChoice[] = [
   }),
   example(v => {
     const object = 8 + v, result = (object * 640 / 4000).toFixed(2);
-    return q("resize-object", "18.04", v, "Un objeto de " + object + " px de ancho en una imagen de 4000 px se redimensiona a 640 px de ancho. Si el escalado es uniforme, ¿cuánto mide ahora?",
+    return q("resize-object", "18.04", v, "Ves un objeto de " + object + " px de ancho en una foto de 4000 px de ancho. Reduces la foto completa a 640 px de ancho sin deformarla. ¿Qué ancho tendrá el objeto tras la reducción?",
       result + " px", "Multiplica por el factor 640/4000 = 0,16.",
       [object + " px", "El objeto también se reduce al redimensionar toda la imagen."],
       [(object * 4000 / 640).toFixed(2) + " px", "Has invertido el factor de escala."],

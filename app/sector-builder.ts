@@ -18,11 +18,7 @@ export function buildSector(drafts: DraftLesson[]): SectorLesson[] {
     questions: d.questions.map(([prompt, options, correctIndex, feedback], i) => {
       const shift = (Number(d.id.slice(3)) * 3 + i) % options.length;
       const rotate = <T,>(xs: T[]) => xs.map((_, n) => xs[(n - shift + xs.length) % xs.length]);
-      const diagnosed = feedback.map((message, index) => {
-        if (index === correctIndex || !/^(No\.|No basta\.|No corresponde\.|No depende\.)$/.test(message)) return message;
-        return `La opción «${options[index]}» no resuelve este caso. ${d.keyIdea}`;
-      });
-      return { id: `q-${d.id}-${i + 1}`, prompt, options: rotate(options), correctIndex: (correctIndex + shift) % options.length, feedback: rotate(diagnosed) };
+      return { id: `q-${d.id}-${i + 1}`, prompt, options: rotate(options), correctIndex: (correctIndex + shift) % options.length, feedback: rotate(feedback) };
     }),
     lab: d.lab ?? "study-simulation", labTitle: d.labTitle, labInstruction: d.labInstruction,
     sources: [{ label: d.source[0], url: d.source[1] }],

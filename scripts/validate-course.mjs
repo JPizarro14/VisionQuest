@@ -89,6 +89,8 @@ for (const [i, stage] of stages.entries()) {
     errors.push(`${stage.id}: ficha de decisión incompleta`);
   if (stage.quiz.length !== 3 || stage.quiz.some(q => !q.choices[q.correct] || q.choices.some(([choice, reason]) => !choice || !reason)))
     errors.push(`${stage.id}: test incompleto`);
+  if (!stage.transfer?.[0]?.trim() || !stage.transfer?.[1]?.trim())
+    errors.push(`${stage.id}: falta el enunciado o la solución del caso de transferencia`);
   const correct = stage.quiz.map(q => q.correct);
   if (assess(stage, correct, false).mastered || assess(stage, correct.slice(1), true).mastered ||
       assess(stage, [-1, ...correct.slice(1)], true).mastered || !assess(stage, correct, true).mastered)

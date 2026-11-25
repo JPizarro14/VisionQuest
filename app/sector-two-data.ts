@@ -12,8 +12,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Cuatro recipientes numéricos",
         paragraphs: [
-          "Un escalar es un solo valor, como la temperatura 21,4. Un vector es una lista ordenada, como RGB = (120, 80, 30). Una matriz organiza valores en filas y columnas. En machine learning llamamos tensor a un array con cualquier número de ejes.",
-          "En matemáticas puras, tensor tiene una definición más precisa relacionada con transformaciones entre espacios. En el trabajo diario con PyTorch o NumPy suele usarse para hablar de un array n-dimensional.",
+          "Un escalar tiene 0 ejes (una intensidad), un vector tiene 1 (los tres componentes de un píxel RGB) y una matriz tiene 2 (fila y columna). En bibliotecas como PyTorch, «tensor» designa un array de cualquier número de ejes: también un escalar o una matriz.",
         ],
         formula: {
           label: "NÚMERO DE EJES",
@@ -24,15 +23,13 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Un vector puede describir una imagen",
         paragraphs: [
-          "Las coordenadas de una caja, cuatro intensidades, las probabilidades de varias clases o un embedding de 768 características son vectores. El significado depende del contrato, no de la forma por sí sola.",
-          "Dos vectores con la misma longitud pueden representar cosas incompatibles. (x, y, ancho, alto) y (rojo, verde, azul, alfa) tienen cuatro componentes, pero no se deben operar como si hablaran el mismo idioma.",
+          "Una caja en formato xywh guarda posición (x, y), ancho y alto; RGBA guarda intensidades roja, verde y azul y un valor de opacidad. Ambos vectores admiten las mismas operaciones numéricas, pero sumarles un desplazamiento en píxeles solo tiene sentido para las coordenadas de la caja.",
         ],
       },
       {
         title: "La shape es la gramática",
         paragraphs: [
-          "La shape indica cuántos valores hay en cada eje. Una tabla de 32 embeddings de 128 características tiene shape (32, 128): 32 ejemplos, cada uno descrito mediante 128 números.",
-          "Nombrar los ejes evita errores silenciosos. Antes de una operación, acostúmbrate a decir en voz alta qué significa cada dimensión.",
+          "Un embedding representa un ejemplo mediante un vector de características aprendidas. Si guardas uno por fila, (32, 128) significa 32 ejemplos y 128 características. Promediar las filas resume cada característica entre ejemplos; promediar las columnas resume cada ejemplo. La forma no te dice cuál de las dos operaciones necesitas.",
         ],
       },
     ],
@@ -49,15 +46,15 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "Un escalar solo contendría un valor.",
-          "Correcto: es una lista ordenada con tres componentes.",
+          "Correcto: hay un solo eje, con una intensidad para cada uno de los tres colores.",
           "No hay nueve valores ni dos ejes de tamaño tres.",
           "Un lote agrupa varios ejemplos; aquí solo describimos un píxel.",
         ],
       },
       {
         id: "s2-embedding-shape",
-        prompt: "Guardas 32 embeddings, cada uno con 128 características. ¿Qué shape es la más natural?",
-        options: ["(128)", "(32, 128)", "(32, 128, 3)", "(4.096, 32)"],
+        prompt: "Guardas 32 vectores de características (embeddings), uno por fila y con 128 números por vector. ¿Qué forma tiene la tabla?",
+        options: ["(128,)", "(32, 128)", "(32, 128, 3)", "(4096, 32)"],
         correctIndex: 1,
         feedback: [
           "Eso solo describe un embedding.",
@@ -74,7 +71,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         feedback: [
           "La misma longitud no garantiza la misma semántica.",
           "El dtype no dice si son coordenadas, colores u otra cosa.",
-          "Correcto: shape y significado forman juntos el contrato.",
+          "Correcto: tanto una caja como un píxel RGBA tienen cuatro componentes, pero miden cosas distintas.",
           "El mismo tipo numérico tampoco define qué mide cada posición.",
         ],
       },
@@ -98,8 +95,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "NumPy: la base numérica de las imágenes",
         paragraphs: [
-          "NumPy (Numerical Python) es una biblioteca de Python para trabajar con arrays multidimensionales y hacer cálculos eficientes. Es una herramienta fundamental en Computer Vision: una imagen decodificada suele representarse mediante un array de NumPy, llamado ndarray.",
-          "Un array almacena valores organizados en una o más dimensiones. Su propiedad shape nos dice cuántos elementos tiene cada dimensión; ndim indica el número de dimensiones, dtype el tipo de dato y size el total de elementos. Por ejemplo, np.array([[10, 20, 30], [40, 50, 60]]) tiene shape (2, 3): dos filas y tres columnas.",
+          "Un ndarray es un array de NumPy cuyos elementos comparten tipo. Para una imagen de grises con dos filas, tres columnas y valores uint8: shape = (2, 3) da los tamaños de los ejes; ndim = 2 los cuenta; dtype = uint8 identifica el tipo de cada valor, y size = 6 cuenta los valores, no los ejes.",
         ],
         formula: {
           label: "SHAPE DE UNA IMAGEN RGB",
@@ -110,9 +106,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Vector, matriz y tupla: no son lo mismo",
         paragraphs: [
-          "Un vector NumPy con tres valores tiene shape (3,): es un array de una dimensión. No tiene una fila y tres columnas ni tres filas y una columna; esas son matrices de shapes (1, 3) y (3, 1), respectivamente. En una matriz de dos dimensiones sí interpretamos el shape como (filas, columnas).",
-          "La coma de (3,) no es un error: shape devuelve una tupla de Python. Una tupla es una colección ordenada e inmutable; (3) sería solo el número 3 entre paréntesis, mientras que (3,) es una tupla con un elemento. A diferencia de la tupla, el ndarray de NumPy está optimizado para operaciones numéricas y suele ser mutable y homogéneo.",
-          "En Computer Vision conviene memorizar H = Height (alto o filas), W = Width (ancho o columnas), C = Channels (canales). Una imagen RGB de 1920 píxeles de ancho y 1080 de alto suele tener shape (1080, 1920, 3) = (H, W, C). Una imagen de grises normalmente tiene shape (H, W).",
+          "Las tres formas contienen tres valores. (3,) tiene un solo eje, sin orientación de fila o columna; (1, 3) es una matriz de una fila y tres columnas; (3, 1), de tres filas y una columna. En Python la coma hace que (3,) sea una tupla de un elemento: (3) es solo el entero 3.",
         ],
         formula: {
           label: "UNA DIMENSIÓN FRENTE A DOS",
@@ -123,16 +117,13 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Operaciones vectorizadas y producto matricial",
         paragraphs: [
-          "NumPy permite operar con un array completo sin escribir un bucle por cada elemento. Por ejemplo, para A = [[10, 20], [30, 40]], A + 5 devuelve [[15, 25], [35, 45]]. Se puede sumar, restar, multiplicar, dividir o comparar; broadcasting no se limita a la suma.",
-          "No confundas operadores: A * B multiplica elemento a elemento, usando broadcasting si hace falta y es compatible. A @ B realiza producto matricial (filas por columnas) y sigue reglas distintas; para dos matrices 2D, el número de columnas de A debe coincidir con el número de filas de B.",
-          "Operación vectorizada significa operar sobre arrays sin escribir bucles explícitos; broadcasting es el mecanismo adicional que permite combinar shapes diferentes cuando son compatibles.",
+          "Vectorizar es expresar el cálculo sobre arrays sin escribir un bucle por elemento. En NumPy, A * B multiplica elementos de posiciones correspondientes (con broadcasting si sus formas lo permiten). Para dos matrices, A @ B combina cada fila de A con cada columna de B: suma productos y exige que coincidan las dimensiones internas.",
         ],
       },
       {
         title: "Broadcasting: aplicar un vector a cada fila",
         paragraphs: [
-          "Imagina A = [[10, 20, 30], [40, 50, 60]] con shape (2, 3) y B = [1, 2, 3] con shape (3,). Al calcular A + B, el resultado es [[11, 22, 33], [41, 52, 63]]. NumPy aplica el mismo vector B a las dos filas, sin que tengas que copiarlo manualmente.",
-          "Eso es broadcasting: permite operaciones elemento a elemento entre arrays con shapes diferentes pero compatibles. Es como repetir una plantilla pequeña sobre la grande, aunque NumPy normalmente evita crear físicamente esas copias.",
+          "Al sumar [[10, 20, 30], [40, 50, 60]] y [1, 2, 3] como arrays de NumPy, el eje de tres elementos se alinea con las columnas. La misma fila de ajustes se usa dos veces: el resultado es [[11, 22, 33], [41, 52, 63]]. Este ajuste de formas compatibles, sin copiar a mano el vector, se llama broadcasting.",
         ],
         formula: {
           label: "UN VECTOR SE APLICA A CADA FILA",
@@ -143,9 +134,8 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Regla de compatibilidad: empezar por la derecha",
         paragraphs: [
-          "Compara los shapes desde su última dimensión (derecha hacia izquierda). Cada pareja de ejes es compatible si sus tamaños coinciden o si uno de ellos mide 1. Si un array tiene menos dimensiones, imagina unos a la izquierda: (4,) se alinea como (1, 4) frente a (3, 4), aunque su shape original sigue siendo (4,).",
-          "Por eso (3, 4) + (4,) funciona: se compara (3, 4) con (1, 4), y los dos ejes son compatibles. En cambio, (3, 4) + (3,) falla: se compara (3, 4) con (1, 3); los tamaños finales 4 y 3 no coinciden y ninguno vale 1.",
-          "Si quieres sumar un valor distinto a cada una de las tres filas de una matriz (3, 4), utiliza un array (3, 1), por ejemplo [[10], [20], [30]]. Se aplicará cada valor a las cuatro columnas de su fila.",
+          "Alinea los ejes por la derecha y trata los que faltan a la izquierda como si midieran 1. Cada pareja debe coincidir o tener un tamaño 1. Frente a (3, 4), (4,) actúa como (1, 4): suma un valor por columna. Con (3,) los últimos tamaños serían 4 y 3: la suma falla.",
+          "Para sumar un valor por fila, dale forma (3, 1) al vector. Los tres valores, por ejemplo [[10], [20], [30]], se extienden cada uno por las cuatro columnas de su fila.",
         ],
         formula: {
           label: "COMPARACIÓN DE SHAPES",
@@ -156,9 +146,8 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Aplicación real: modificar canales RGB",
         paragraphs: [
-          "Una imagen RGB suele tener shape (H, W, C), con H = Height (alto), W = Width (ancho) y C = Channels (canales); en RGB, C = 3 (Red, Green, Blue). Si sumamos el vector [20, 10, 0] de shape (3,), aumentamos conceptualmente 20 el rojo y 10 el verde de cada píxel, sin cambiar el azul.",
-          "NumPy alinea (H, W, 3) con (1, 1, 3). El vector se aplica a todos los H × W píxeles y el resultado mantiene shape (H, W, 3). Para una imagen RGB uint8: ajuste = np.array([20, 10, 0], dtype=np.int16); resultado = np.clip(imagen.astype(np.int16) + ajuste, 0, 255).astype(np.uint8).",
-          "Las imágenes uint8 almacenan valores de 0 a 255: convierte a un tipo más amplio antes de sumar, limita el resultado y después recupera uint8. Además, OpenCV suele cargar imágenes en orden BGR, no RGB: el orden de canales del ajuste debe corresponderse con el de la imagen.",
+          "Con los canales en el último eje, NumPy aplica el ajuste (3,) a cada píxel. Para no sumar en uint8: ajuste = np.array([20, 10, 0], dtype=np.int16); resultado = np.clip(imagen.astype(np.int16) + ajuste, 0, 255).astype(np.uint8). El recorte va después de la suma y antes de volver a 8 bits.",
+          "En RGB ese vector aumenta rojo y verde, no azul. Si la imagen está en orden BGR y se quiere el mismo efecto, el ajuste debe ser [0, 10, 20].",
         ],
         formula: {
           label: "BROADCASTING EN COMPUTER VISION",
@@ -169,8 +158,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Reducir significa resumir",
         paragraphs: [
-          "mean, sum, max o argmax condensan valores a lo largo de uno o varios ejes. Si promedias H (Height/alto) y W (Width/ancho) en un tensor (H, W, C), queda un vector de C valores, uno por canal (Channels).",
-          "Con keepdims puedes conservar ejes de tamaño 1. Esto facilita aplicar después broadcasting sin perder la posición semántica de cada dimensión.",
+          "Con los ejes (alto, ancho, canales), media = imagen.mean(axis=(0, 1)) tiene forma (C,), una media por canal. Con keepdims=True tiene forma (1, 1, C): los ejes reducidos siguen en su sitio. En imagen − media, cada píxel usa la media de su canal. Aquí (C,) también funciona porque los canales son el último eje.",
         ],
       },
     ],
@@ -184,7 +172,7 @@ export const sectorTwoLessons: SectorLesson[] = [
     questions: [
       {
         id: "s2-broadcast-rgb",
-        prompt: "¿Es compatible la suma entre una imagen (480, 640, 3) y un vector (3,)?",
+        prompt: "En NumPy sumas un vector de tres ajustes a una imagen de forma (480, 640, 3), con los canales al final. ¿Es compatible la suma elemento a elemento?",
         options: ["No, nunca", "Sí: el vector se aplica a cada píxel", "Solo si la imagen es cuadrada", "Solo después de aplanarla"],
         correctIndex: 1,
         feedback: [
@@ -196,7 +184,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       },
       {
         id: "s2-broadcast-invalid",
-        prompt: "¿Qué ocurre normalmente al sumar arrays con shapes (2, 3) y (3, 2)?",
+        prompt: "En NumPy, A tiene forma (2, 3) y B, (3, 2). ¿Qué ocurre al evaluar A + B?",
         options: ["Resultado (2, 2)", "Resultado (3, 3)", "Error por shapes incompatibles", "Se transpone uno automáticamente"],
         correctIndex: 2,
         feedback: [
@@ -208,11 +196,11 @@ export const sectorTwoLessons: SectorLesson[] = [
       },
       {
         id: "s2-reduce-spatial",
-        prompt: "Promedias los ejes H y W de una imagen H × W × C. Sin keepdims, ¿qué queda?",
+        prompt: "Una imagen tiene forma (alto, ancho, canales). Si promedias alto y ancho sin conservar esos ejes, ¿qué queda para C canales?",
         options: ["Un vector de C valores", "Una imagen H × W", "Un escalar siempre", "Un tensor C × H × W"],
         correctIndex: 0,
         feedback: [
-          "Correcto: queda la media de cada canal.",
+          "Correcto: desaparecen los dos ejes espaciales y queda una media por canal.",
           "Esos son precisamente los ejes que se han reducido.",
           "Solo sería escalar si también redujeras C.",
           "Una reducción no reordena los ejes restantes.",
@@ -238,8 +226,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Tres maneras de medir un desplazamiento",
         paragraphs: [
-          "L1 suma valores absolutos: como caminar por calles en cuadrícula. L2 calcula la distancia recta usando cuadrados y raíz. L∞ se queda con la mayor diferencia individual.",
-          "Entre a = (1, 2) y b = (4, 6), la diferencia es (3, 4): L1 vale 7, L2 vale 5 y L∞ vale 4.",
+          "De a = (1, 2) a b = (4, 6) el desplazamiento b − a es (3, 4). L1 suma los cambios absolutos por eje: 3 + 4 = 7. L2 mide la distancia recta: √(3² + 4²) = 5. L∞ toma el mayor cambio absoluto en un eje: max(3, 4) = 4.",
         ],
         formula: {
           label: "DISTANCIA EUCLÍDEA",
@@ -258,7 +245,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Dónde aparece en Computer Vision",
         paragraphs: [
           "Las distancias comparan embeddings, asocian detecciones entre fotogramas, miden errores de coordenadas y ayudan a recuperar imágenes similares.",
-          "No existe una distancia universalmente mejor. L2 castiga con más fuerza diferencias grandes; L1 suele responder de forma menos extrema ante valores alejados. La decisión depende de qué error quieras penalizar.",
+          "L1 suma errores absolutos; L2 eleva al cuadrado antes de sumar y tomar la raíz. Con igual L1, un error concentrado en un eje pesa más en L2: (4, 0) y (2, 2) tienen L1 = 4, pero sus L2 son 4 y √8. No significa que L2 sea siempre mayor que L1.",
         ],
       },
     ],
@@ -276,7 +263,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         feedback: [
           "Solo has tomado la diferencia del primer eje.",
           "Ese es el máximo cambio individual, es decir, L∞.",
-          "Correcto: √(3² + 4²) = 5.",
+          "Correcto: los desplazamientos son 3 y 4; la distancia recta es √(3² + 4²) = 5.",
           "Siete es la distancia L1: |3| + |4|.",
         ],
       },
@@ -287,8 +274,8 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "Cinco corresponde a L2.",
-          "Correcto: |4 − 1| + |6 − 2| = 3 + 4.",
-          "Has sumado las coordenadas originales.",
+          "Correcto: la distancia por ejes suma |4 − 1| + |6 − 2| = 7.",
+          "12 es el producto de los desplazamientos (3 × 4); L1 los suma en valor absoluto.",
           "Es la suma de cuadrados antes de aplicar la raíz de L2.",
         ],
       },
@@ -325,7 +312,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Multiplicar parejas y sumar",
         paragraphs: [
           "El producto escalar de (a₁, a₂, …) y (b₁, b₂, …) es a₁b₁ + a₂b₂ + … Para (1, 2) y (3, 4) obtenemos 1×3 + 2×4 = 11.",
-          "Geométricamente también equivale a ‖a‖ ‖b‖ cos(θ). Será positivo si apuntan de forma parecida, cero si son perpendiculares y negativo si se oponen, salvo casos degenerados.",
+          "Para vectores no nulos también vale ‖a‖ ‖b‖ cos(θ), con ‖·‖ la longitud euclídea y θ el ángulo entre ambos. Es positivo para un ángulo agudo, cero para 90° y negativo para uno obtuso; con el mismo sentido es positivo y con sentidos opuestos es negativo.",
         ],
       },
       {
@@ -344,7 +331,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Parches, embeddings y atención",
         paragraphs: [
           "Una neurona lineal calcula productos escalares entre datos y pesos. Una convolución aplica una idea parecida localmente entre el kernel y cada parche. La atención también construye afinidades a partir de productos entre consultas y claves.",
-          "En búsqueda por embeddings, el coseno es útil cuando interesa la dirección semántica más que el tamaño. No lo elijas por costumbre: a veces la norma del embedding contiene información útil.",
+          "En una búsqueda por embeddings (vectores de características), usa coseno si un cambio de escala no debe alterar la coincidencia. Si la norma codifica una intensidad que sí te interesa distinguir, el coseno pierde esa información: asigna la misma similitud a un vector y a su doble al compararlos con una referencia no nula.",
         ],
       },
     ],
@@ -360,9 +347,9 @@ export const sectorTwoLessons: SectorLesson[] = [
         options: ["7", "10", "11", "(3, 8)"],
         correctIndex: 2,
         feedback: [
-          "Has sumado las cuatro componentes.",
-          "No corresponde a la suma de productos emparejados.",
-          "Correcto: 1×3 + 2×4 = 11.",
+          "Sumar solo 3 y 4 omite la contribución del primer vector.",
+          "10 es la suma de las cuatro componentes; primero hay que multiplicar las parejas.",
+          "Correcto: se multiplican las componentes correspondientes y se suman: 3 + 8 = 11.",
           "Eso es la multiplicación elemento a elemento antes de sumar.",
         ],
       },
@@ -374,7 +361,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         feedback: [
           "Cero indicaría direcciones perpendiculares.",
           "Los vectores están exactamente alineados.",
-          "Correcto: uno es un múltiplo positivo del otro.",
+          "Correcto: multiplicar el primer vector por 10 cambia su norma, pero no su dirección ni su sentido.",
           "El coseno está acotado entre −1 y 1.",
         ],
       },
@@ -385,7 +372,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "La dirección es precisamente lo que compara.",
-          "Correcto: normaliza las longitudes de ambos vectores.",
+          "Correcto: al dividir el producto escalar por las dos normas, solo queda el coseno del ángulo.",
           "Los vectores deben seguir teniendo dimensiones compatibles.",
           "Los signos afectan al ángulo y por tanto al resultado.",
         ],
@@ -422,15 +409,13 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Una capa lineal es una matriz de decisiones",
         paragraphs: [
-          "Si x tiene 128 características y queremos 64 salidas, podemos usar W con shape (64, 128). Cada fila de W aprende una combinación distinta de las 128 entradas.",
-          "Después suele añadirse un sesgo b de 64 valores: y = W x + b. En sentido matemático estricto, sumar b convierte la transformación lineal en afín, aunque las librerías la llamen Linear.",
+          "Con x de forma (128,) y y = W @ x + b para un solo ejemplo, W tiene forma (64, 128) y b, (64,). La fila i contiene los 128 pesos que se combinan con x para obtener la salida i; a esa suma se añade el sesgo b[i]. Si b no es cero, la transformación es afín.",
         ],
       },
       {
         title: "Transponer no es hacer reshape",
         paragraphs: [
-          "La transposición intercambia ejes; reshape cambia la forma siguiendo el orden lineal de almacenamiento. Pueden terminar con la misma shape y, sin embargo, colocar valores diferentes en cada posición.",
-          "Antes de transponer, pregunta qué representan filas y columnas. Antes de reshape, pregunta qué agrupación de valores quieres conservar.",
+          "Si A = [[1, 2, 3], [4, 5, 6]] es un array NumPy, A.T intercambia filas y columnas: su primera fila es [1, 4]. A.reshape(3, 2), con el orden por filas predeterminado, reagrupa 1, 2, 3, 4, 5, 6: su primera fila es [1, 2]. Ambas salidas tienen forma (3, 2), pero no el mismo significado.",
         ],
       },
     ],
@@ -442,7 +427,7 @@ export const sectorTwoLessons: SectorLesson[] = [
     questions: [
       {
         id: "s2-matmul-shape",
-        prompt: "¿Qué shape resulta de (5, 3) @ (3, 8)?",
+        prompt: "A tiene 5 filas y 3 columnas; B, 3 filas y 8 columnas. ¿Qué forma tiene su producto matricial A @ B?",
         options: ["(5, 8)", "(3, 3)", "(8, 5)", "(5, 3, 8)"],
         correctIndex: 0,
         feedback: [
@@ -459,7 +444,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "No hace falta un eje de color.",
-          "Correcto: 64 filas de salida por 128 entradas.",
+          "Correcto: cada una de las 64 salidas necesita una fila con 128 pesos de entrada.",
           "Eso solo define un vector, no 64 combinaciones distintas.",
           "Faltarían pesos para las 128 entradas.",
         ],
@@ -496,7 +481,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Rango: cuánta información independiente queda",
         paragraphs: [
-          "El rango de una matriz es el número de filas o columnas linealmente independientes. Si una columna es combinación de otras, no aporta una dirección nueva.",
+          "El rango es el máximo número de columnas linealmente independientes, que coincide con el máximo de filas independientes. Una columna que sea combinación de las demás no aporta una dirección nueva.",
           "Una matriz de shape (3, 3) puede tener rango 2: tiene tres filas y tres columnas, pero sus columnas solo generan un subespacio de dimensión dos.",
         ],
       },
@@ -504,7 +489,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Determinante e inversa",
         paragraphs: [
           "Para una matriz cuadrada, el valor absoluto del determinante mide cuánto escala volúmenes. Si vale cero, la transformación colapsa volumen, la matriz es singular y no existe una inversa ordinaria.",
-          "La inversa A⁻¹ deshace A cuando existe, pero en código numérico suele ser preferible resolver A x = b directamente en vez de calcular A⁻¹ y multiplicar.",
+          "Si A es invertible y solo interesa x, un solucionador factoriza A y resuelve A x = b sin construir todas las columnas de A⁻¹. Evita trabajo y redondeos adicionales; no corrige por sí solo un mal condicionamiento.",
         ],
         formula: {
           label: "SEÑAL DE PÉRDIDA",
@@ -515,8 +500,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Casi singular también es peligroso",
         paragraphs: [
-          "Una matriz puede tener inversa y aun ser mal condicionada. Un número de condición alto indica que pequeños cambios o errores de redondeo pueden provocar cambios grandes en la solución.",
-          "En una entrevista, no basta con preguntar si la operación se puede calcular: también importa si el resultado será estable.",
+          "Una matriz invertible puede comprimir mucho una dirección y poco otra. Al resolver A x = b se deshace esa compresión: un pequeño error relativo en b puede amplificarse en x. El número de condición mide esa sensibilidad en el peor caso, no el error efectivo de cada solución.",
         ],
       },
     ],
@@ -552,7 +536,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       },
       {
         id: "s2-conditioning",
-        prompt: "¿Qué advierte un número de condición muy alto?",
+        prompt: "Al resolver A x = b, la matriz A es invertible pero tiene un número de condición muy alto. ¿Qué riesgo indica?",
         options: ["Que la matriz usa muchos canales", "Que pequeños errores pueden amplificarse", "Que el resultado siempre es exacto", "Que la matriz debe ser rectangular"],
         correctIndex: 1,
         feedback: [
@@ -582,15 +566,15 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Autovectores: direcciones que no giran",
         paragraphs: [
-          "Un autovector v de una matriz cuadrada A cumple A v = λ v. La transformación puede estirarlo, encogerlo o invertirlo, pero no lo saca de su línea. λ indica el factor de escala.",
-          "No todas las matrices reales tienen una base completa de autovectores reales. Por eso conviene saber qué condiciones exige cada descomposición.",
+          "Un autovector es un vector no nulo v tal que A v = λ v. El autovalor λ indica la escala: con λ negativo cambia el sentido; con λ = 0, la imagen de v es el vector cero.",
+          "No toda matriz real tiene suficientes autovectores reales independientes para formar una base. Un giro de 90° en el plano, por ejemplo, envía todo vector no nulo a una línea perpendicular: no conserva ninguna recta real por el origen.",
         ],
       },
       {
         title: "SVD funciona con matrices rectangulares",
         paragraphs: [
-          "La descomposición en valores singulares escribe A = U Σ Vᵀ. U y V contienen direcciones ortogonales y Σ ordena la fuerza de cada componente mediante valores singulares no negativos.",
-          "Toda matriz real admite SVD. Conservar solo los valores singulares mayores permite construir una aproximación de bajo rango: útil para compresión, reducción de ruido y diagnóstico.",
+          "Toda matriz real, incluso rectangular, admite una descomposición en valores singulares (SVD): A = U Σ Vᵀ. Las columnas de V son direcciones ortonormales de entrada; las de U, de salida. Cada valor singular de la diagonal de Σ indica cuánto se escala la dirección correspondiente.",
+          "Al conservar los k valores mayores y sus pares de direcciones se obtiene la mejor aproximación de rango a lo sumo k en error cuadrático total. Puede servir para comprimir, aunque una componente pequeña no es necesariamente ruido.",
         ],
         formula: {
           label: "DESCOMPOSICIÓN SVD",
@@ -602,7 +586,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "PCA resume variación, no relevancia",
         paragraphs: [
           "PCA centra los datos y busca ejes ortogonales que capturan la mayor varianza. Puede calcularse mediante autovectores de la covarianza o con SVD sobre los datos centrados.",
-          "Mayor varianza no significa mayor utilidad para la etiqueta. Si conservas una sola componente de dos columnas independientes, no borras una columna: proyectas las dos sobre un eje. Pierdes la variación perpendicular, aunque sea pequeña, y con ella podrías perder la señal que distingue las grietas.",
+          "PCA no usa etiquetas. Si el cambio de iluminación domina la varianza y una grieta solo altera un contraste débil en otra dirección, proyectar sobre el primer eje puede conservar la luz y perder la grieta. Se descarta una dirección de variación, no necesariamente una columna de los datos.",
         ],
       },
     ],
@@ -619,18 +603,18 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "No es un término constante añadido.",
-          "Correcto: mantiene su dirección y su autovalor es 3.",
+          "Correcto: aplicar A a v solo triplica su longitud; v es autovector y 3 es su autovalor.",
           "Una inversa es una matriz, no este vector.",
           "Podría coincidir casualmente con un gradiente, pero la ecuación no lo implica.",
         ],
       },
       {
         id: "s2-svd-rectangular",
-        prompt: "¿Puede aplicarse SVD a una matriz rectangular real?",
+        prompt: "Tienes 40 ejemplos con 12 características cada uno. ¿Puedes aplicar la descomposición en valores singulares (SVD) directamente a esa matriz de 40 × 12?",
         options: ["No", "Solo si todas las filas son iguales", "Sí", "Solo después de hacerla cuadrada con ceros"],
         correctIndex: 2,
         feedback: [
-          "SVD es precisamente más general que la eigendescomposición.",
+          "La SVD admite números distintos de filas y columnas; no necesita una matriz cuadrada.",
           "No exige esa dependencia entre filas.",
           "Correcto: toda matriz real admite una descomposición SVD.",
           "No es necesario alterar sus dimensiones.",
@@ -668,15 +652,13 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Derivada: pendiente local",
         paragraphs: [
-          "La derivada de f respecto a x aproxima cuánto cambia f cuando x varía un poco. Para f(x) = x², la derivada es 2x: en x = 3 la pendiente vale 6.",
-          "Una derivada grande indica sensibilidad local, no que el valor de la función sea necesariamente grande.",
+          "Para f(x) = x², f(3) = 9 es la altura y f′(3) = 2 × 3 = 6 es la pendiente. Cerca de 3, un cambio pequeño Δx modifica f en aproximadamente 6·Δx. La derivada mide cambio por unidad de entrada, no el valor de la función.",
         ],
       },
       {
         title: "De una pendiente a un mapa de pendientes",
         paragraphs: [
-          "Con muchos parámetros calculamos una derivada parcial para cada uno. El vector que las reúne es el gradiente. Si una función produce varias salidas, las derivadas pueden organizarse en un Jacobiano.",
-          "El Hessiano reúne segundas derivadas y describe curvatura local. Es útil para razonar sobre optimización, aunque entrenar redes grandes rara vez implica construirlo completo.",
+          "El gradiente de una salida escalar reúne una derivada parcial por entrada. Para varias salidas, el Jacobiano es una matriz: en la fila i y columna j indica cómo cambia la salida i al variar la entrada j. El Hessiano de una salida escalar reúne sus segundas derivadas: describe cómo cambia el gradiente, es decir, la curvatura local.",
         ],
         formula: {
           label: "PASO DE DESCENSO",
@@ -705,14 +687,14 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "Ese es x, no la pendiente de x².",
-          "Correcto: f'(x) = 2x y en 3 vale 6.",
+          "Correcto: la pendiente es f'(x) = 2x; al evaluar en x = 3 se obtiene 6.",
           "Nueve es el valor de la función.",
-          "Has multiplicado por el valor de la función.",
+          "18 sería 2 × 3²; la derivada de x² es 2x, no 2x².",
         ],
       },
       {
         id: "s2-gradient-direction",
-        prompt: "Si quieres reducir una pérdida diferenciable localmente, ¿en qué dirección básica avanzas?",
+        prompt: "En descenso de gradiente, si la pérdida es diferenciable y su gradiente no es cero, ¿en qué dirección das un paso pequeño para reducirla?",
         options: ["A favor del gradiente", "En contra del gradiente", "Siempre hacia cero", "En una dirección aleatoria obligatoriamente"],
         correctIndex: 1,
         feedback: [
@@ -724,7 +706,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       },
       {
         id: "s2-zero-gradient",
-        prompt: "Encuentras ∇L = 0. ¿Qué puedes asegurar?",
+        prompt: "En cierto punto, el gradiente de una pérdida diferenciable L es cero (∇L = 0). ¿Qué puedes asegurar?",
         options: ["Es el mínimo global", "El entrenamiento ha terminado bien", "Es un punto estacionario, no necesariamente un mínimo", "La pérdida vale cero"],
         correctIndex: 2,
         feedback: [
@@ -767,14 +749,13 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "Un grafo, no siempre una cadena",
         paragraphs: [
           "Si una variable participa en dos ramas que terminan en la misma pérdida, el efecto total es la suma de ambas rutas. Esto explica los gradientes que atraviesan conexiones residuales.",
-          "El grafo se construye durante el forward. El backward lo recorre en sentido inverso y reutiliza resultados intermedios.",
+          "En PyTorch, al calcular la salida se registra el grafo de operaciones diferenciables. La pasada hacia atrás (backward) lo recorre desde la pérdida hacia las entradas: multiplica derivadas a lo largo de cada ruta y suma las contribuciones donde confluyen.",
         ],
       },
       {
         title: "Backward calcula; el optimizador actualiza",
         paragraphs: [
-          "En PyTorch, backward calcula y acumula gradientes en .grad. No modifica los pesos por sí mismo. El optimizador aplica después la actualización.",
-          "Como los gradientes se acumulan por defecto, normalmente se limpian antes del siguiente paso. Olvidarlo cambia el algoritmo de entrenamiento.",
+          "En PyTorch, loss.backward() propaga derivadas y acumula gradientes en .grad de los parámetros entrenables. optimizer.step() usa esos gradientes para cambiar los pesos. Si cada lote debe producir una actualización independiente, llama a optimizer.zero_grad() antes del siguiente backward; si no, el gradiente anterior también cuenta.",
         ],
       },
     ],
@@ -793,7 +774,7 @@ export const sectorTwoLessons: SectorLesson[] = [
           "Eso es du/dx multiplicado por sí mismo, no por dy/du.",
           "Es dy/du cuando u = 3, pero falta du/dx.",
           "Nueve es y, no su derivada respecto a x.",
-          "Correcto: dy/du = 6 y du/dx = 2; 6 × 2 = 12.",
+          "Correcto: en x = 1 se tiene u = 3; las derivadas locales son 2u = 6 y 2. Su producto es 12.",
         ],
       },
       {
@@ -815,7 +796,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "La actualización corresponde al paso del optimizador.",
-          "Correcto: rellena o acumula los campos .grad.",
+          "Correcto: calcula derivadas de la pérdida y las acumula en .grad; no actualiza pesos.",
           "La serialización es una operación separada.",
           "El learning rate es un hiperparámetro del optimizador.",
         ],
@@ -840,15 +821,15 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Una distribución reparte masa",
         paragraphs: [
-          "Para clases mutuamente excluyentes y exhaustivas, sus probabilidades suman 1. Una variable aleatoria asigna valores a resultados inciertos, y su esperanza es un promedio ponderado por probabilidades.",
-          "Una puntuación de red o logit no es automáticamente una probabilidad. Hace falta una transformación y, si importa tomar decisiones reales, evaluar calibración.",
+          "Una distribución asigna probabilidades a los resultados posibles; para clases excluyentes que cubren todos los casos, suman 1. La esperanza de una cantidad numérica es la suma de sus valores ponderados por esas probabilidades.",
+          "Los logits son puntuaciones, no probabilidades. Softmax puede convertirlos en una distribución, pero no garantiza calibración: entre los casos a los que se asigna 0,8, el suceso debería ocurrir aproximadamente el 80 % de las veces.",
         ],
       },
       {
         title: "La condición cambia la pregunta",
         paragraphs: [
           "P(alarma | defecto) es la sensibilidad: de los defectos reales, cuántos detectamos. P(defecto | alarma) es el valor predictivo: de las alarmas, cuántas son defectos. No son intercambiables.",
-          "Bayes conecta ambas cantidades incorporando la prevalencia. Si los defectos son muy raros, incluso un modelo sensible puede producir muchas falsas alarmas.",
+          "Importa la frecuencia del defecto. De 10.000 piezas, supón que 10 son defectuosas y se detectan 9. Si hay además 99 falsas alarmas entre las 9990 piezas sanas, la sensibilidad es 9/10 = 90 %, pero solo 9 de las 108 alarmas son aciertos (8,3 %).",
         ],
         formula: {
           label: "BAYES",
@@ -859,8 +840,7 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "El umbral expresa un coste",
         paragraphs: [
-          "Subir o bajar el umbral cambia falsos positivos y falsos negativos. Elegirlo requiere conocer el coste de inspeccionar una alarma frente al coste de dejar pasar un defecto.",
-          "Por eso una métrica aislada no decide el sistema. Debes conectar distribución, prevalencia, calibración y coste operativo.",
+          "Si una puntuación alta indica defecto, bajar el umbral señala más piezas: puede recuperar defectos, pero también enviar piezas sanas a inspección. Compara umbrales en validación con una prevalencia representativa y pondera cada falsa alarma y cada defecto omitido por su coste.",
         ],
       },
     ],
@@ -884,12 +864,12 @@ export const sectorTwoLessons: SectorLesson[] = [
       },
       {
         id: "s2-sensitivity-meaning",
-        prompt: "Un detector tiene 90% de sensibilidad. ¿Qué significa?",
+        prompt: "En una inspección de piezas, un detector tiene un 90 % de sensibilidad. ¿Qué significa?",
         options: ["El 90% de sus alarmas son correctas", "Detecta el 90% de los defectos reales", "Solo produce 10 alarmas", "Su accuracy es necesariamente 90%"],
         correctIndex: 1,
         feedback: [
-          "Eso sería precisión o valor predictivo positivo.",
-          "Correcto: mide P(alarma | defecto).",
+          "Tomar las alarmas como denominador mediría el valor predictivo positivo, no la sensibilidad.",
+          "Correcto: el denominador son los defectos reales; de cada 100, el detector señala 90.",
           "Es una proporción, no un número absoluto.",
           "La accuracy también depende de negativos y de la prevalencia.",
         ],
@@ -901,7 +881,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 0,
         feedback: [
           "Correcto: una población enorme de negativos puede aportar muchos falsos positivos.",
-          "La regla sigue siendo válida.",
+          "Bayes sigue relacionando la sensibilidad con el valor predictivo mediante la frecuencia previa del defecto.",
           "Eso solo ocurriría sin falsos positivos.",
           "La prevalencia es una parte esencial del posterior.",
         ],
@@ -926,15 +906,15 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Centro y dispersión",
         paragraphs: [
-          "La media suma y divide; la mediana busca el punto central ordenado. Un valor extremo arrastra más la media que la mediana.",
-          "La varianza promedia desviaciones cuadráticas respecto a la media. La desviación estándar es su raíz y vuelve a las unidades originales.",
+          "En [1, 2, 3], media y mediana valen 2. Si el 3 pasa a 30, la media pasa a 11 y la mediana sigue en 2: cambia la suma, no el valor central ordenado.",
+          "La varianza mide desviaciones cuadráticas respecto a la media y tiene unidades al cuadrado. La desviación estándar es su raíz: si los datos están en píxeles, la varianza se expresa en px² y la desviación en px.",
         ],
       },
       {
         title: "Covarianza no significa causalidad",
         paragraphs: [
           "La covarianza es positiva cuando dos variables tienden a crecer juntas y negativa cuando una sube al bajar la otra. Su escala depende de las unidades.",
-          "La correlación normaliza esa relación lineal, normalmente entre −1 y 1. Ni covarianza ni correlación prueban que una variable cause la otra.",
+          "La correlación de Pearson divide la covarianza por el producto de las desviaciones estándar: queda entre −1 y 1 si ambas son positivas. Ninguna medida demuestra causalidad; dos canales pueden aumentar juntos porque ambos reciben más luz.",
         ],
         formula: {
           label: "ESTANDARIZACIÓN",
@@ -945,8 +925,8 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Normalizar sin mirar el examen",
         paragraphs: [
-          "Para estandarizar, calculamos media y desviación en train y reutilizamos esos valores en validación, test y producción. Recalcularlos con test filtra información del futuro.",
-          "En visión también debes precisar sobre qué ejes calculas estadísticas: por canal, por imagen, por lote o por dataset producen transformaciones diferentes.",
+          "Para una estandarización ajustada al conjunto de datos, estima la media μ y la desviación σ solo en entrenamiento. Con σ > 0, aplica z = (x − μ)/σ usando las mismas estadísticas en validación, prueba y producción. Incluir la prueba en el ajuste filtra información reservada.",
+          "Declara los ejes: «por canal» puede significar promediar sobre imágenes, filas y columnas, conservando un par (μ, σ) para cada color. No equivale a calcular un único par para todos los canales ni a recalcularlo en cada imagen.",
         ],
       },
     ],
@@ -963,26 +943,26 @@ export const sectorTwoLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "La mediana suele ser más robusta ante un único extremo.",
-          "Correcto: el valor participa directamente en la suma.",
+          "Correcto: la media utiliza la magnitud del extremo; la mediana depende de la posición ordenada.",
           "Su sensibilidad a extremos es diferente.",
           "Al menos la media cambiará salvo casos especiales.",
         ],
       },
       {
         id: "s2-zscore",
-        prompt: "Si x = μ, ¿cuánto vale su z-score cuando σ > 0?",
+        prompt: "Una intensidad x coincide con la media μ del entrenamiento y la desviación estándar σ es positiva. ¿Qué puntuación estandarizada (z-score) recibe?",
         options: ["−1", "0", "1", "σ"],
         correctIndex: 1,
         feedback: [
           "Eso correspondería a una desviación por debajo de la media.",
-          "Correcto: el numerador x − μ vale cero.",
+          "Correcto: z = (x − μ)/σ; si x es la media, su distancia a la media es cero.",
           "Uno indica una desviación estándar por encima.",
-          "El resultado queda adimensional.",
+          "σ mide dispersión; se usa como divisor, no como puntuación de un valor igual a la media.",
         ],
       },
       {
         id: "s2-leakage-stats",
-        prompt: "¿Con qué datos debes estimar μ y σ para evaluar honestamente un modelo?",
+        prompt: "Vas a fijar la media y la desviación estándar de las entradas antes de evaluar un modelo. ¿Con qué datos debes estimarlas?",
         options: ["Train únicamente", "Train + test", "Test únicamente", "Con las predicciones"],
         correctIndex: 0,
         feedback: [
@@ -1013,7 +993,7 @@ export const sectorTwoLessons: SectorLesson[] = [
         title: "El logaritmo convierte productos en sumas",
         paragraphs: [
           "log(ab) = log(a) + log(b). Multiplicar muchas probabilidades menores que uno puede terminar redondeando a cero; sumar sus logaritmos mantiene una representación manejable.",
-          "Para probabilidades entre 0 y 1, el logaritmo natural es menor o igual que cero. log(1) = 0 y log(0) no es finito.",
+          "Para 0 < p ≤ 1, log(p) ≤ 0 y log(1) = 0. El logaritmo real de 0 no está definido; cuando p se acerca a 0 por la derecha, log(p) tiende a −∞. Calcula los logaritmos antes de que un producto se redondee a cero.",
         ],
         formula: {
           label: "DOMINIO LOGARÍTMICO",
@@ -1024,15 +1004,15 @@ export const sectorTwoLessons: SectorLesson[] = [
       {
         title: "Exponentiales que desbordan",
         paragraphs: [
-          "exp(1000) supera fácilmente el rango de muchos tipos float. En softmax podemos restar el máximo de todos los logits antes de exponenciar; la distribución resultante no cambia.",
-          "log-sum-exp aplica esta idea para calcular log(∑ exp(xᵢ)) de forma estable.",
+          "Para puntuaciones finitas xᵢ, toma m = max(xᵢ). En softmax usa exp(xᵢ − m) / ∑ⱼ exp(xⱼ − m): el factor exp(−m) se cancela en el cociente. Ningún exponente es positivo y al menos un término vale exp(0) = 1.",
+          "Para calcular log(∑ᵢ exp(xᵢ)), en cambio, devuelve m + log(∑ᵢ exp(xᵢ − m)). Aquí no hay un cociente que cancele el factor: hay que sumar m al final.",
         ],
       },
       {
         title: "Epsilon no es decoración",
         paragraphs: [
-          "Añadir un epsilon pequeño puede evitar dividir entre cero o calcular log(0), pero también modifica ligeramente la expresión. Su tamaño y ubicación deben estar justificados.",
-          "NaN e infinito se propagan con facilidad. Al depurar entrenamiento, revisa rangos, dtype, divisiones, logaritmos y exponenciales en el primer punto donde aparecen, no solo al final.",
+          "Un suelo positivo ε en log(max(p, ε)) evita log(0), pero da el mismo valor a todas las probabilidades menores que ε. Un ε demasiado grande introduce sesgo; uno demasiado pequeño puede redondearse a cero en el tipo usado.",
+          "Para localizar NaN (valor no numérico) o infinito, inspecciona entradas y salidas de cada operación hasta encontrar la primera que recibe datos finitos y devuelve uno no finito. Ahí comprueba denominadores, dominios de logaritmos y rangos de exponenciales antes de añadir ε.",
         ],
       },
     ],

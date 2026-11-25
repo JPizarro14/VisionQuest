@@ -109,8 +109,7 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "Piensa en una hoja de cálculo",
         paragraphs: [
-          "Imagina una hoja de cálculo diminuta. Cada celda es un píxel y guarda un número. En una imagen de ocho bits en escala de grises, 0 suele representar negro, 255 blanco y los valores intermedios distintos grises.",
-          "Cambiar un número cambia una pequeña parte de la imagen. En el laboratorio puedes seleccionar una casilla y modificarla: eso es editar una imagen píxel a píxel.",
+          "Cada fila y columna de la tabla localizan un píxel. Con grises de 8 bits sin signo, cada celda guarda una intensidad de 0 (negro) a 255 (blanco). Cambiar una celda aclara u oscurece ese píxel; no lo mueve ni cambia el tamaño de la imagen.",
         ],
       },
       {
@@ -128,7 +127,7 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "Lo que recibe el algoritmo",
         paragraphs: [
-          "El archivo JPEG o PNG es una forma de guardar y transportar la imagen. Una vez decodificado, el algoritmo trabaja con la matriz o tensor de valores. Distinguir archivo, imagen decodificada y tensor evita muchas confusiones posteriores.",
+          "Un JPEG o PNG contiene bytes codificados, no una tabla que se pueda indexar directamente por fila y columna. Al decodificarlo se obtiene la matriz de píxeles; a partir de ella se prepara el tensor que espera el algoritmo.",
         ],
       },
     ],
@@ -140,11 +139,11 @@ export const sectorOneLessons: SectorLesson[] = [
     questions: [
       {
         id: "shape-rgb",
-        prompt: "Con la convención (H, W, C) = (Height/alto, Width/ancho, Channels/canales), ¿qué shape tiene una imagen RGB de 640 píxeles de ancho y 480 de alto?",
+        prompt: "Una imagen RGB mide 640 píxeles de ancho y 480 de alto. ¿Qué forma tiene si los ejes se ordenan como (alto, ancho, canales)?",
         options: ["(640, 480)", "(480, 640, 3)", "(3, 640, 480)", "(640, 480, 255)"],
         correctIndex: 1,
         feedback: [
-          "Falta indicar que cada píxel tiene tres canales de color.",
+          "Has intercambiado alto y ancho y falta el eje de los tres canales.",
           "Correcto: H = 480 filas, W = 640 columnas y C = 3 canales RGB.",
           "Esa disposición es C × W × H, no la convención solicitada H × W × C.",
           "255 puede ser un valor de intensidad, pero no es el número de canales.",
@@ -152,7 +151,7 @@ export const sectorOneLessons: SectorLesson[] = [
       },
       {
         id: "brighter-pixel",
-        prompt: "En una imagen uint8 en escala de grises, cambias un píxel de 40 a 210. ¿Qué ocurrirá normalmente?",
+        prompt: "Visualizas una imagen uint8 con 0 negro y 255 blanco. Si cambias un píxel de 40 a 210 sin tocar la escala, ¿qué verás?",
         options: ["Se verá más claro", "Se verá más oscuro", "Cambiará de posición", "La imagen tendrá más resolución"],
         correctIndex: 0,
         feedback: [
@@ -164,7 +163,7 @@ export const sectorOneLessons: SectorLesson[] = [
       },
       {
         id: "gray-shape",
-        prompt: "¿Cuál es la forma más habitual de una imagen de grises sin dimensión de canal explícita?",
+        prompt: "Una matriz de grises tiene H filas y W columnas. Sin eje de canal explícito, ¿cuál es su forma en NumPy?",
         options: ["(H, W)", "(H, W, 3)", "(3, H, W)", "(255, H, W)"],
         correctIndex: 0,
         feedback: [
@@ -202,7 +201,6 @@ export const sectorOneLessons: SectorLesson[] = [
         title: "Dimensión no significa última coordenada",
         paragraphs: [
           "Si una imagen RGB mide 640 × 480 en la convención ancho × alto, W = 640 columnas y H = 480 filas. En NumPy la shape espacial es (H, W) = (480, 640) y la shape completa es (480, 640, 3). Como empezamos a contar en cero, la última coordenada válida (x, y) es (639, 479).",
-          "Este detalle explica muchos errores de tipo off-by-one al recortar regiones o comprobar límites.",
         ],
         formula: {
           label: "ÚLTIMO PÍXEL VÁLIDO",
@@ -213,8 +211,8 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "Shape, size y región de interés",
         paragraphs: [
-          "En un array de NumPy, shape describe las dimensiones y array.size cuenta todos sus elementos: una imagen RGB con shape (H, W, 3) tiene H × W × 3 valores, donde H es Height (alto) y W es Width (ancho). No generalices el nombre size a todas las bibliotecas: en OpenCV también se utiliza para indicar ancho y alto de una imagen.",
-          "Una región de interés (ROI) es la zona que decidimos analizar. Puede delimitarse con un rectángulo, un polígono o una máscara. Si la recortas como imagen[y1:y2, x1:x2], los límites superiores y2 y x2 quedan excluidos; al volver a la imagen original debes sumar el desplazamiento (x1, y1) a las coordenadas locales.",
+          "Una región de interés (ROI) es la zona elegida para el análisis. En NumPy, imagen[10:30, 40:70] toma las filas 10 a 29 y las columnas 40 a 69: el extremo superior de cada intervalo queda fuera. Si la imagen es RGB, el recorte tiene shape (20, 30, 3) y size = 20 × 30 × 3 = 1800 valores.",
+          "El origen del recorte está en (x, y) = (40, 10) de la imagen original. Un punto local (5, 2) pasa a (40 + 5, 10 + 2) = (45, 12); recortar no cambia la escala.",
         ],
       },
     ],
@@ -226,25 +224,25 @@ export const sectorOneLessons: SectorLesson[] = [
     questions: [
       {
         id: "numpy-coordinate",
-        prompt: "Quieres leer el píxel situado en x = 5, y = 2. ¿Qué acceso utilizarías normalmente en NumPy/OpenCV?",
+        prompt: "En una imagen de NumPy con índices desde cero, x es la columna e y la fila. ¿Cómo lees el píxel (x, y) = (5, 2)?",
         options: ["imagen[5, 2]", "imagen[2, 5]", "imagen[x + y]", "imagen[5][5]"],
         correctIndex: 1,
         feedback: [
           "Has usado (x, y), pero la matriz espera [fila, columna] = [y, x].",
-          "Correcto: y selecciona la fila 2 y x la columna 5.",
+          "Correcto: el primer índice selecciona la fila 2; el segundo, la columna 5.",
           "Sumar coordenadas pierde la posición bidimensional.",
           "Eso seleccionaría fila 5 y columna 5.",
         ],
       },
       {
         id: "last-coordinate",
-        prompt: "¿Cuál es el último píxel válido, en coordenadas (x, y), de una imagen con W = 640 (Width/ancho) y H = 480 (Height/alto)?",
+        prompt: "Una imagen tiene 640 columnas y 480 filas, numeradas desde cero. ¿Qué coordenadas (x, y) tiene el píxel inferior derecho?",
         options: ["(640, 480)", "(479, 639)", "(639, 479)", "(638, 478)"],
         correctIndex: 2,
         feedback: [
           "Esos son los tamaños, pero los índices empiezan en cero.",
           "Has colocado primero y y después x; la pregunta expresa la coordenada como (x, y).",
-          "Correcto: x llega hasta 639 e y hasta 479.",
+          "Correcto: empezando en cero, el último índice es el tamaño del eje menos uno.",
           "Has restado dos en vez de uno.",
         ],
       },
@@ -257,7 +255,7 @@ export const sectorOneLessons: SectorLesson[] = [
           "Tres es el número de canales.",
           "Correcto: H = Height (alto) es el primer eje y contiene 480 filas.",
           "640 es el número de columnas.",
-          "La forma ya proporciona la respuesta directamente; no hay que multiplicar.",
+          "Sumar alto, ancho y canales da 1123, pero esa suma no cuenta filas.",
         ],
       },
     ],
@@ -292,15 +290,14 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "Float no trae un rango mágico",
         paragraphs: [
-          "Un dato float puede representar decimales y un rango enorme, pero cada librería o modelo adopta convenciones. Muchos pipelines convierten la imagen a 0–1; otros trabajan con −1–1 o estandarizan usando media y desviación.",
-          "Por eso convertir a float sin escalar y escalar sin conocer el dtype son operaciones distintas. El contrato de entrada del modelo manda.",
+          "Convertir a float32 cambia el tipo, no la escala: una intensidad uint8 de 200 pasa a 200,0. Para llevar el rango 0–255 a [0, 1], divide los valores convertidos por 255; ese píxel pasa a unos 0,784. Otros modelos esperan [−1, 1] o valores estandarizados.",
         ],
       },
       {
         title: "Convertir puede destruir información",
         paragraphs: [
-          "Al pasar de 16 a 8 bits hay que comprimir miles de niveles en solo 256. Varios valores originales terminarán representados por el mismo valor: eso es cuantización y la precisión perdida no se recupera ampliando después.",
-          "También debes vigilar el desbordamiento y el recorte. Sumar 20 a un uint8 cercano a 255 puede saturarse o desbordarse según la operación y la librería.",
+          "Al representar todo el rango de uint16 con uint8, 65.536 niveles se reducen a 256: intensidades antes distinguibles pueden quedar iguales. Volver a 16 bits no las separa.",
+          "También cambia el resultado de la aritmética: 250 + 20 vale 270, pero en uint8 se almacena 255 si se satura y 14 si se toma el resto módulo 256. Un cambio de tipo por sí solo no garantiza saturación.",
         ],
       },
     ],
@@ -312,14 +309,14 @@ export const sectorOneLessons: SectorLesson[] = [
     questions: [
       {
         id: "levels-eight-bit",
-        prompt: "¿Cuántos niveles diferentes puede almacenar un canal de 8 bits?",
+        prompt: "¿Cuántas intensidades distintas puede codificar un canal entero de 8 bits sin signo (uint8)?",
         options: ["8", "16", "255", "256"],
         correctIndex: 3,
         feedback: [
           "Ocho es el número de bits, no el número de combinaciones.",
           "Eso corresponde a cuatro bits: 2⁴.",
           "255 es el valor máximo cuando empezamos en cero, pero también existe el valor 0.",
-          "Correcto: 2⁸ ofrece 256 niveles, numerados de 0 a 255.",
+          "Correcto: 2⁸ da 256 combinaciones; 255 es el último código, no el número de niveles.",
         ],
       },
       {
@@ -366,22 +363,21 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "Mezcla aditiva",
         paragraphs: [
-          "Las pantallas mezclan luz. Rojo y verde intensos producen amarillo; los tres canales al máximo producen blanco; los tres a cero producen negro.",
+          "Las pantallas suman luz: en RGB, rojo y verde al máximo con azul apagado dan amarillo. Los tres al máximo dan blanco; los tres a cero, negro.",
           "Cada canal puede inspeccionarse por separado como una imagen de grises: las zonas claras indican dónde ese componente tiene mayor intensidad.",
         ],
       },
       {
         title: "Alfa no es otro color",
         paragraphs: [
-          "RGBA añade un cuarto canal llamado alfa. Suele representar opacidad: cuánto deja ver el píxel lo que hay detrás. No aporta un cuarto color primario.",
-          "Una imagen de grises puede aparecer como (H, W) o como (H, W, 1), dependiendo de la herramienta y del contrato esperado. H = Height (alto), W = Width (ancho) y ese 1 es C = Channels (canales) cuando el eje está presente.",
+          "En RGBA, RGB describe el color y alfa su opacidad al componerlo sobre un fondo. Con alfa normalizado, 0 deja ver solo el fondo, 1 lo oculta y un valor intermedio mezcla ambos. Alfa cambia la contribución del color, no añade otro primario.",
         ],
       },
       {
         title: "La trampa BGR",
         paragraphs: [
           "OpenCV carga habitualmente las imágenes de color en orden BGR, mientras que Pillow, Matplotlib y muchas redes esperan RGB. Las dimensiones siguen siendo correctas, pero rojo y azul aparecen intercambiados.",
-          "Antes de culpar al modelo, comprueba siempre orden de canales, dtype y rango. Son tres de los fallos silenciosos más comunes.",
+          "Comprueba un píxel que sepas rojo: en BGR uint8 se aproxima a (0, 0, 255), no a (255, 0, 0). Convierte de BGR a RGB si la red lo espera y ajusta por separado el tipo y el rango: intercambiar canales no convierte 0–255 en 0–1.",
         ],
         formula: {
           label: "MISMO PÍXEL, DISTINTO ORDEN",
@@ -398,12 +394,12 @@ export const sectorOneLessons: SectorLesson[] = [
     questions: [
       {
         id: "opencv-order",
-        prompt: "¿En qué orden entrega normalmente cv.imread una imagen de color?",
+        prompt: "Al leer una foto con cv.imread en el modo de color predeterminado de OpenCV, ¿en qué orden llegan los canales?",
         options: ["RGB", "BGR", "HSV", "CHW"],
         correctIndex: 1,
         feedback: [
           "RGB es habitual en muchas herramientas, pero cv.imread usa BGR por defecto.",
-          "Correcto: azul, verde y rojo.",
+          "Correcto: un píxel leído en BGR guarda azul, verde y rojo, en ese orden.",
           "HSV requiere una conversión explícita.",
           "CHW describe la posición de los ejes, no el significado de los colores.",
         ],
@@ -416,13 +412,13 @@ export const sectorOneLessons: SectorLesson[] = [
         feedback: [
           "La nitidez no se almacena normalmente como canal alfa.",
           "No es un mapa de distancia por definición.",
-          "Correcto: controla cuánto deja ver el píxel el fondo.",
+          "Correcto: alfa controla cuánto contribuye el píxel al componerlo sobre el fondo.",
           "La resolución depende del número de píxeles.",
         ],
       },
       {
         id: "split-red",
-        prompt: "Si separas el canal rojo de una imagen con shape (H, W, 3), ¿qué shape tendrá normalmente ese canal?",
+        prompt: "Una imagen RGB de NumPy tiene H filas, W columnas y tres canales. ¿Qué forma devuelve imagen[:, :, 0]?",
         options: ["(H, W)", "(H, W, 3)", "(3, H, W)", "(H × 3, W × 3)"],
         correctIndex: 0,
         feedback: [
@@ -459,14 +455,14 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "HSV separa tono, saturación y brillo",
         paragraphs: [
-          "H indica la familia de color; S, lo puro o apagado que está; V, su brillo. Esto facilita muchas reglas basadas en color, aunque HSV no es perceptualmente uniforme y se vuelve inestable cuando la saturación es muy baja.",
-          "Los rangos dependen de la implementación. En OpenCV, una imagen HSV uint8 utiliza habitualmente H entre 0 y 179, no entre 0 y 360.",
+          "En HSV, H es el tono, S la saturación y V el valor (el máximo de los componentes RGB). Puedes seleccionar por tono y tolerar cierto cambio de brillo. Cerca del gris, con S baja, pequeñas diferencias entre canales alteran mucho H; con S = 0 no hay tono distinguible.",
+          "En la conversión estándar de OpenCV a HSV uint8, H va de 0 a 179: cada paso representa unos dos grados del círculo de tonos. La variante FULL usa otra escala.",
         ],
       },
       {
         title: "Lab y YCrCb responden a otras necesidades",
         paragraphs: [
-          "Lab separa luminosidad L* de dos ejes cromáticos y busca que distancias numéricas se acerquen mejor a diferencias perceptibles. YCrCb separa una componente de luminancia de dos componentes de crominancia, algo útil en vídeo y compresión.",
+          "Lab separa la claridad L* de dos ejes cromáticos (a* y b*) para aproximar diferencias perceptibles. YCrCb separa la luma Y de dos diferencias de color, Cr y Cb; así puede codificarse el color a menor resolución que la luma.",
           "Ninguna conversión añade detalle perdido. Solo reorganiza los valores; además, redondeos y rangos finitos pueden introducir pequeñas pérdidas.",
         ],
         formula: {
@@ -501,19 +497,19 @@ export const sectorOneLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "Una transformación de coordenadas no puede inventar detalle capturado por la cámara.",
-          "Correcto: describimos los colores mediante otros ejes.",
+          "Correcto: tono, saturación y valor describen el mismo color con otros ejes.",
           "Alto y ancho no cambian por convertir el espacio de color.",
           "El brillo se representa de otra manera, pero las sombras siguen existiendo.",
         ],
       },
       {
         id: "opencv-hue",
-        prompt: "En la representación HSV uint8 habitual de OpenCV, ¿qué rango utiliza H?",
+        prompt: "En OpenCV, al convertir una imagen uint8 con COLOR_BGR2HSV (no FULL), ¿qué intervalo de enteros representa el tono H?",
         options: ["0–1", "0–100", "0–179", "0–65.535"],
         correctIndex: 2,
         feedback: [
           "Ese rango es común para floats normalizados, no para el H uint8 habitual de OpenCV.",
-          "No es el rango convencional de OpenCV para H.",
+          "0–100 sugiere un porcentaje; aquí H codifica un ángulo con unos dos grados por nivel.",
           "Correcto: OpenCV comprime los 360 grados en valores enteros de 0 a 179.",
           "Ese es el rango completo de un uint16, no el del tono en esta representación.",
         ],
@@ -538,15 +534,13 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "Resolución espacial",
         paragraphs: [
-          "La resolución digital suele expresarse como ancho × alto (W × H), mientras que NumPy guarda las dimensiones espaciales en la shape (H, W): Height (alto, filas) antes que Width (ancho, columnas). Aumentarla crea más muestras espaciales, pero ampliar una imagen ya capturada no reconstruye automáticamente el detalle que nunca estuvo presente.",
-          "El detalle real también depende de óptica, enfoque, movimiento, ruido, distancia y sensor. Dos imágenes 4K pueden contener cantidades de información útil muy diferentes.",
+          "Ampliar interpola más píxeles a partir de los ya medidos: no equivale a captar más detalle. Si dos líneas se fundieron por desenfoque durante la captura, aumentar el ancho y el alto no vuelve a separarlas. También influyen la óptica, el movimiento, el ruido y el sensor.",
         ],
       },
       {
         title: "Muestreo frente a cuantización",
         paragraphs: [
-          "Reducir filas y columnas cambia el muestreo espacial. Reducir bits cambia la cuantización de intensidad. Ambos eliminan información, pero lo hacen en ejes diferentes.",
-          "Esta distinción será importante al decidir si un defecto pequeño puede sobrevivir al resize de entrada de un detector.",
+          "Reducir filas y columnas deja menos muestras espaciales: una grieta estrecha puede desaparecer. Reducir la profundidad de bits mantiene la rejilla, pero deja menos niveles de intensidad: dos grises próximos pueden acabar con el mismo código.",
         ],
         formula: {
           label: "DOS PREGUNTAS DISTINTAS",
@@ -558,7 +552,7 @@ export const sectorOneLessons: SectorLesson[] = [
         title: "Aliasing: aparecen patrones que no estaban",
         paragraphs: [
           "Si reduces una textura fina sin filtrar, varias estructuras diferentes pueden producir las mismas muestras. El resultado puede mostrar dientes, parpadeos o patrones moiré falsos.",
-          "Por eso, al reducir, suele aplicarse antes un filtro paso bajo o anti-aliasing. Suaviza detalle demasiado fino para la nueva rejilla y evita que se convierta en información engañosa.",
+          "Por eso se atenúan las frecuencias demasiado altas para la nueva rejilla con un filtro de paso bajo antes o durante la reducción. Una vez que el patrón falso está en las muestras, suavizar después no permite distinguirlo del detalle real.",
         ],
       },
     ],
@@ -583,7 +577,7 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         id: "downsample-filter",
         prompt: "¿Cuándo suele aplicarse un filtro anti-aliasing al reducir una imagen?",
-        options: ["Después de borrar la imagen", "Antes o durante el remuestreo", "Solo al añadir alfa", "Nunca"],
+        options: ["Solo después de diezmar la imagen", "Antes o durante el remuestreo", "Solo al añadir alfa", "Nunca"],
         correctIndex: 1,
         feedback: [
           "Una vez eliminadas las muestras ya no puedes impedir el aliasing original.",
@@ -624,15 +618,14 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "De HWC a CHW",
         paragraphs: [
-          "NumPy y OpenCV suelen representar una imagen de color con shape (H, W, C): Height (alto), Width (ancho), Channels (canales). Muchos modelos de PyTorch reciben (C, H, W). Los valores son los mismos, pero los ejes se reordenan con una permutación; no basta con hacer reshape.",
-          "reshape no sustituye a permute: reshape conserva el recorrido lineal de los valores y puede mezclar píxeles con canales si se usa para intercambiar ejes.",
+          "En una imagen ordenada por alto, ancho y canal, el valor de entrada [y, x, c] debe pasar a la posición [c, y, x]. En NumPy lo hace imagen.transpose(2, 0, 1); en PyTorch, tensor.permute(2, 0, 1).",
+          "reshape cambia cómo se agrupa la secuencia de valores; no intercambia los índices de cada elemento. Puede dar las dimensiones pedidas y, aun así, colocar un valor en el canal equivocado.",
         ],
       },
       {
         title: "N es el lote",
         paragraphs: [
-          "Durante entrenamiento e inferencia por lotes se añade un eje N (número de imágenes del batch). (N, C, H, W) significa lote, Channels/canales, Height/alto y Width/ancho. Un lote de 16 imágenes RGB de 224 × 224 tendrá shape (16, 3, 224, 224).",
-          "Un único ejemplo también puede necesitar eje de lote: (1, 3, 224, 224). Que N valga uno no significa que el eje deje de existir.",
+          "N es el número de ejemplos del lote. En orden (N, C, H, W) —lote, canales, alto y ancho—, 16 imágenes RGB de 224×224 forman (16, 3, 224, 224). Si el modelo exige cuatro ejes también en inferencia, una sola imagen entra como (1, 3, 224, 224): cambia la longitud del eje, no su existencia.",
         ],
         formula: {
           label: "ENTRADA HABITUAL EN PYTORCH",
@@ -643,8 +636,7 @@ export const sectorOneLessons: SectorLesson[] = [
       {
         title: "El contrato completo de entrada",
         paragraphs: [
-          "La shape es solo una parte. El modelo también espera cierto dtype, rango, orden de color, tamaño y normalización. Si cualquiera difiere del entrenamiento, la imagen puede verse bien para ti y resultar extraña para la red.",
-          "Antes de desplegar un modelo, documenta el contrato como si fuera una API: nombre y orden de ejes, tamaño, dtype, rango, espacio de color y normalización.",
+          "Compara el tensor justo antes de la red con lo usado al entrenarla: inspecciona el tipo de dato, el mínimo y el máximo por canal y un píxel de color conocido. RGB y BGR tienen la misma forma, igual que los datos en 0–1 y en 0–255. Comprueba también que se aplicaron las mismas medias y desviaciones, en el orden de canales correcto y una sola vez.",
         ],
       },
     ],
@@ -656,37 +648,37 @@ export const sectorOneLessons: SectorLesson[] = [
     questions: [
       {
         id: "batch-shape",
-        prompt: "¿Qué shape NCHW corresponde a 16 imágenes RGB de 224 × 224?",
+        prompt: "Una red espera el orden NCHW (lote, canales, alto, ancho). ¿Qué forma corresponde a 16 imágenes RGB de 224 × 224?",
         options: ["(16, 224, 224, 3)", "(3, 16, 224, 224)", "(16, 3, 224, 224)", "(224, 224, 16, 3)"],
         correctIndex: 2,
         feedback: [
           "Eso es NHWC, con canales al final.",
           "Has colocado los canales antes del lote.",
-          "Correcto: N (lote), C (Channels/canales), H (Height/alto) y W (Width/ancho).",
+          "Correcto: hay 16 ejemplos, 3 canales por ejemplo y 224 posiciones en cada eje espacial.",
           "Los ejes espaciales no van primero en NCHW.",
         ],
       },
       {
         id: "permute-hwc",
-        prompt: "¿Qué permutación conceptual convierte HWC en CHW?",
+        prompt: "Los ejes de una imagen son alto (eje 0), ancho (1) y canal (2). ¿Qué orden de ejes pasas a transpose para poner primero los canales sin mezclar píxeles?",
         options: ["(0, 1, 2)", "(2, 0, 1)", "(1, 2, 0)", "No se puede"],
         correctIndex: 1,
         feedback: [
           "Ese orden no cambia ningún eje.",
           "Correcto: C (Channels/canales) pasa al frente; después quedan H (Height/alto) y W (Width/ancho).",
-          "Ese orden produce WCH.",
+          "Ese orden pondría primero el ancho, luego los canales y por último el alto.",
           "Es una operación habitual y no necesita cambiar los valores.",
         ],
       },
       {
         id: "input-contract",
         prompt: "La shape coincide con la entrada del modelo, pero las predicciones son pésimas. ¿Qué conviene comprobar a continuación?",
-        options: ["Solo el nombre del archivo", "Dtype, rango, color y normalización", "El color del botón", "Nada: la shape garantiza compatibilidad"],
+        options: ["Solo el nombre del archivo", "Dtype, rango, color y normalización", "Solo el número total de píxeles", "Nada: la shape garantiza compatibilidad"],
         correctIndex: 1,
         feedback: [
           "La extensión o nombre no describe cómo llega el tensor al modelo.",
-          "Correcto: son partes esenciales del contrato de entrada.",
-          "La interfaz no altera el tensor de inferencia.",
+          "Correcto: compara con el entrenamiento; RGB y BGR, por ejemplo, tienen la misma forma.",
+          "El número de píxeles no revela un intercambio de canales ni un rango incorrecto.",
           "Una shape correcta no detecta canales intercambiados ni escalas erróneas.",
         ],
       },

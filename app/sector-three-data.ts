@@ -12,8 +12,8 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "La misma suma puede dar dos respuestas",
         paragraphs: [
-          "En uint8 solo caben enteros entre 0 y 255. OpenCV suele saturar: 250 + 10 termina en 255. Una suma directa de arrays uint8 en NumPy puede envolver el valor módulo 256 y producir 4. La fórmula es idéntica; la regla de almacenamiento cambia el resultado.",
-          "En un pipeline seguro es habitual convertir temporalmente a un tipo con más rango, operar, recortar de forma consciente y convertir al tipo final. Así la política deja de ser un efecto secundario oculto.",
+          "250 + 10 vale 260. Con entrada y salida uint8, cv.add satura en 255; la suma elemento a elemento de dos arrays uint8 de NumPy conserva 260 módulo 256, es decir, 4.",
+          "Si quieres saturar en NumPy, convierte los operandos a int16, suma, recorta a [0, 255] y vuelve a uint8. Recortar después de sumar en uint8 ya no sirve: el 4 parece una intensidad válida.",
         ],
         formula: {
           label: "TRANSFORMACIÓN LINEAL",
@@ -24,15 +24,15 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Suma, resta y diferencia",
         paragraphs: [
-          "Sumar un escalar eleva intensidades; restarlo las reduce. Restar dos imágenes alineadas resalta lo que ha cambiado entre ellas, pero también recoge movimiento de cámara, variación de iluminación y ruido.",
-          "El valor absoluto de la diferencia evita que los cambios negativos desaparezcan. Aun así, una diferencia brillante no explica la causa: solo indica que los valores ya no coinciden.",
+          "Con aritmética con signo, un píxel que pasa de 100 a 70 da actual − anterior = −30: se ha oscurecido. La diferencia absoluta vale 30 tanto para ese cambio como para uno de 70 a 100; mide cuánto cambió, no en qué sentido.",
+          "Ni la resta ni su magnitud identifican la causa. Con imágenes alineadas puede haber cambios de luz o ruido; si la cámara se movió y no se alinearon bien, también aparecerán diferencias en objetos inmóviles.",
         ],
       },
       {
         title: "Mezclar no es pegar",
         paragraphs: [
-          "Una mezcla ponderada combina dos imágenes alineadas mediante α·A + β·B + γ. Si α y β suman uno y γ es cero, puedes imaginar una transición transparente entre ambas.",
-          "Para superponer una pieza opaca con forma irregular necesitas además una máscara. La aritmética decide cuánto aporta cada imagen; la máscara decide dónde participa cada una.",
+          "En α·A + β·B + γ, A y B son intensidades en la misma posición de dos imágenes alineadas; α y β son sus pesos y γ es un desplazamiento. Con pesos no negativos que suman 1 y γ = 0, la salida queda entre A y B.",
+          "Unos pesos constantes mezclan toda la imagen. Para pegar una pieza opaca solo dentro de su silueta, usa una máscara que elija A dentro y B fuera.",
         ],
       },
     ],
@@ -49,7 +49,7 @@ export const sectorThreeLessons: SectorLesson[] = [
         correctIndex: 1,
         feedback: [
           "Ese es el resultado de envolver módulo 256, no de saturar.",
-          "Correcto: 260 supera el máximo y se recorta a 255.",
+          "Correcto: la suma da 260; la saturación guarda 255, el máximo de uint8.",
           "El cálculo intermedio vale 260, pero no cabe en la salida uint8 saturada.",
           "Saturar al límite superior no produce cero.",
         ],
@@ -98,15 +98,14 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "La curva es una máquina de traducción",
         paragraphs: [
-          "En un gráfico entrada-salida, la diagonal significa identidad: cada valor sale igual que entró. Desplazarla hacia arriba aclara; aumentar su pendiente separa más los tonos y eleva el contraste, hasta que el recorte aplasta detalles en negro o blanco.",
+          "Con la intensidad de entrada en horizontal y la de salida en vertical, y = x deja cada tono igual. Subir la curva aclara; una pendiente mayor separa más dos tonos próximos. Si el resultado se recorta al máximo, varios tonos producen el mismo blanco y se pierde su diferencia.",
           "Como no se consulta el vecindario, dos píxeles con el mismo valor reciben exactamente el mismo resultado aunque estén en lugares distintos.",
         ],
       },
       {
         title: "Gamma curva, no desplaza",
         paragraphs: [
-          "Una corrección gamma normaliza la intensidad, aplica una potencia y devuelve el resultado a su rango. Con la convención de scikit-image, salida = entrada^γ: γ menor que 1 aclara los tonos intermedios y γ mayor que 1 los oscurece.",
-          "Conviene declarar la convención porque algunos textos o sistemas hablan del exponente inverso. Memorizar solo ‘gamma mayor aclara’ sin saber la fórmula es una receta para equivocarse.",
+          "Con entrada en [0, 1] y salida = entrada^γ, 0 < γ < 1 aclara los tonos intermedios y γ > 1 los oscurece. Por ejemplo, para entrada 0,25, el exponente 0,5 da 0,5 y el exponente 2 da 0,0625. Algunos sistemas usan 1/γ: el mismo parámetro entonces tiene el efecto contrario.",
         ],
         formula: {
           label: "GAMMA EN RANGO 0–1",
@@ -118,7 +117,7 @@ export const sectorThreeLessons: SectorLesson[] = [
         title: "Una LUT cambia cálculo por memoria",
         paragraphs: [
           "Para una imagen uint8 solo existen 256 entradas posibles por canal. Puedes precalcular la salida de cada una en una tabla de consulta o LUT y después reemplazar cada píxel mediante esa tabla.",
-          "La LUT es rápida y reproducible para curvas complejas, pero no recupera detalle ya saturado ni corrige por sí sola una iluminación espacialmente desigual.",
+          "La intensidad sirve de índice: todos los píxeles de valor 80 consultan la misma casilla, estén al sol o a la sombra. Una sola tabla ahorra cálculo, pero no distingue la posición ni recupera niveles ya saturados.",
         ],
       },
     ],
@@ -142,7 +141,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       },
       {
         id: "s3-point-transform",
-        prompt: "¿Qué información utiliza una transformación puntual para calcular un píxel de salida?",
+        prompt: "Una vez fijada una curva de tonos global, ¿qué dato consulta para calcular cada píxel de salida?",
         options: ["Toda la imagen", "Solo el píxel de entrada correspondiente", "Los ocho vecinos", "La etiqueta de clase"],
         correctIndex: 1,
         feedback: [
@@ -154,7 +153,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       },
       {
         id: "s3-lut-limit",
-        prompt: "¿Qué no puede hacer una LUT puntual por sí sola?",
+        prompt: "Aplicas a toda una imagen uint8 la misma tabla de consulta (LUT), indexada por intensidad. ¿Qué no puede hacer esa tabla por sí sola?",
         options: ["Aplicar una curva gamma", "Invertir intensidades", "Corregir de forma distinta dos zonas con el mismo valor", "Acelerar un mapeo uint8"],
         correctIndex: 2,
         feedback: [
@@ -184,8 +183,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Comparar produce una imagen booleana",
         paragraphs: [
-          "La condición imagen > T genera un valor verdadero o falso por posición. En una representación binaria puede visualizarse como 255 y 0, pero conceptualmente es una selección, no una imagen de tonos.",
-          "AND conserva lo común a dos máscaras, OR reúne ambas, NOT invierte la selección y XOR conserva lo que pertenece a una sola. Estas operaciones permiten construir regiones complejas a partir de reglas sencillas.",
+          "En una imagen de grises, imagen > T genera una máscara: verdadero si la intensidad supera T y falso si es menor o igual. Sobre dos máscaras alineadas, AND selecciona lo común; OR, lo que está en al menos una; XOR, lo que está en exactamente una. NOT invierte una sola máscara.",
         ],
         formula: {
           label: "UMBRAL GLOBAL",
@@ -196,16 +194,15 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Seleccionar y mezclar son cosas diferentes",
         paragraphs: [
-          "Una máscara binaria puede elegir entre fondo y primer plano: salida = M·A + (1−M)·B si M está expresada como 0 o 1. Una máscara suave o alfa permite valores intermedios y crea transiciones graduales.",
-          "Los operadores bit a bit son naturales con máscaras enteras, pero aplicarlos directamente sobre intensidades float rara vez expresa la intención correcta. Primero define qué representa cada array.",
+          "En M·A + (1−M)·B, M = 1 elige A y M = 0 elige B. Con alfa intermedio, por ejemplo M = 0,25, se mezcla un 25 % de A con un 75 % de B. Calcula en coma flotante antes de redondear.",
+          "Una máscara uint8 con 0 y 255 sirve como selección por cero/no cero. Para usarla como peso de mezcla, conviértela a float y divídela por 255: el peso debe estar entre 0 y 1. Una operación bit a bit no calcula esa mezcla.",
         ],
       },
       {
         title: "Un único umbral no entiende la iluminación",
         paragraphs: [
-          "Un umbral global funciona cuando objeto y fondo ocupan rangos separables. Si una mitad está en sombra y otra iluminada, el mismo T puede perder objeto en un lado y aceptar fondo en el otro.",
-          "Otsu elige automáticamente un único T usando el histograma: entre los umbrales posibles, busca una separación en dos grupos que minimice su dispersión interna ponderada (equivalentemente, maximice la varianza entre grupos). El valor elegido puede no ser el punto medio visual entre dos picos: varios umbrales de un valle vacío pueden rendir igual.",
-          "Otsu funciona mejor cuando los grupos tonales se separan bien. No sabe dónde está cada píxel: con iluminación desigual o mucho ruido puede fallar aunque el umbral sea óptimo para ese histograma. El umbral adaptativo calcula umbrales locales; compara ambos en el laboratorio.",
+          "Otsu divide el histograma en dos grupos con un umbral global T que minimiza la varianza interna ponderada, o equivalentemente maximiza la varianza entre grupos. No exige que T esté justo a mitad de dos picos.",
+          "Si el fondo iluminado y el objeto en sombra tienen intensidades parecidas, un solo T no los distingue. Un umbral adaptativo se estima con vecinos de cada zona y puede seguir una iluminación que varía lentamente.",
         ],
       },
     ],
@@ -272,8 +269,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Multiplicar, sumar y desplazar",
         paragraphs: [
-          "Superpones el kernel sobre una zona de la imagen, multiplicas cada píxel por el peso que tiene encima y sumas todos los productos. Ese número se escribe en la posición asociada al ancla, normalmente el centro.",
-          "Después desplazas la ventana y repites. La misma regla se aplica en todas las posiciones: por eso hablamos de un filtro espacialmente invariante.",
+          "Se alinea el ancla del kernel con la posición de salida, se multiplica cada intensidad cubierta por su peso y se suman los productos. Para la ventana [10, 20, 50] y los pesos [¼, ½, ¼] con ancla central, se escribe 2,5 + 10 + 12,5 = 25 en la posición del 20. Al deslizar la ventana se repiten los mismos pesos.",
         ],
         formula: {
           label: "RESPUESTA LOCAL",
@@ -284,7 +280,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "La suma de pesos ofrece una pista",
         paragraphs: [
-          "Si los pesos suman 1, una región completamente uniforme conserva su intensidad. Un promedio 3×3 usa nueve pesos 1/9. Si suman 0, las zonas constantes responden con cero y suelen destacar variaciones como bordes.",
+          "Si todas las muestras bajo el kernel valen c, la salida es c por la suma de pesos: con suma 1 queda c; con suma 0 queda 0. Un promedio 3×3, por ejemplo, usa nueve pesos de 1/9.",
           "Es una pista, no una descripción completa. La disposición y el signo de los pesos determinan la orientación y las frecuencias a las que responde el filtro.",
         ],
       },
@@ -304,7 +300,7 @@ export const sectorThreeLessons: SectorLesson[] = [
     questions: [
       {
         id: "s3-kernel-constant",
-        prompt: "Un kernel tiene pesos que suman 1. ¿Qué debería ocurrir idealmente en una región constante de valor 80?",
+        prompt: "Todos los píxeles bajo un kernel valen 80. Sus pesos suman 1 y no se añade ningún sesgo. ¿Qué salida esperas?",
         options: ["Quedar cerca de 80", "Convertirse siempre en 0", "Duplicarse", "Cambiar de resolución"],
         correctIndex: 0,
         feedback: [
@@ -320,8 +316,8 @@ export const sectorThreeLessons: SectorLesson[] = [
         options: ["Ordena todos los píxeles de la imagen", "Calcula una suma ponderada del vecindario", "Entrena una red", "Cambia el formato del archivo"],
         correctIndex: 1,
         feedback: [
-          "Solo un filtro de orden local, como la mediana, ordenaría valores del vecindario.",
-          "Correcto: multiplica cada muestra por su peso y suma.",
+          "Un filtro lineal no ordena los valores: el peso depende de la posición del vecino, no de su puesto por intensidad.",
+          "Correcto: cada vecino aporta su intensidad multiplicada por el peso del kernel en esa posición.",
           "La operación puede aparecer en redes, pero por sí misma no es entrenamiento.",
           "Trabaja sobre los datos ya decodificados.",
         ],
@@ -358,8 +354,8 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Girar o no girar",
         paragraphs: [
-          "La correlación alinea el kernel como está escrito. La convolución lo refleja en ambos ejes antes de aplicar la misma suma ponderada. OpenCV filter2D calcula realmente correlación, aunque parte de su documentación use el verbo convolucionar.",
-          "Con un Gaussian simétrico, girarlo no cambia nada. Con [-1, 0, 1], la inversión produce [1, 0, -1] y cambia el signo de la respuesta de borde.",
+          "La correlación usa los pesos tal como están escritos; la convolución invierte los dos ejes del kernel (giro de 180°). Con ancla central y el mismo borde, un gaussiano centrado da lo mismo en ambas. En cambio, [-1, 0, 1] pasa a [1, 0, -1]: las respuestas tienen signos opuestos.",
+          "cv.filter2D de OpenCV hace correlación. Para aplicar una convolución con un kernel no simétrico hay que invertirlo y, si el ancla no era central, reflejar también su posición.",
         ],
         formula: {
           label: "DIFERENCIA OPERATIVA",
@@ -370,15 +366,13 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "El ancla dice dónde escribir",
         paragraphs: [
-          "El ancla es la posición del kernel asociada al píxel de salida. En un kernel impar suele ser el centro; moverla desplaza espacialmente la respuesta.",
-          "Por eso los tamaños impares resultan cómodos: tienen un centro inequívoco. Los kernels pares son posibles en algunas APIs, pero obligan a declarar una convención de alineación.",
+          "El ancla fija a qué posición de salida se asigna la suma de una ventana. Si la ventana cubre las columnas 10, 11 y 12, con ancla central el resultado se escribe en la 11; con ancla izquierda, en la 10. No han cambiado los pesos ni las muestras de esa ventana, solo la alineación.",
         ],
       },
       {
         title: "Fuera de la foto también hay una decisión",
         paragraphs: [
-          "Al llegar a un borde faltan vecinos. Padding constante añade un valor como cero; replicate repite el último píxel; reflect espeja el contenido; valid calcula solo donde el kernel cabe y reduce la salida.",
-          "Ninguna política es neutral. Añadir negro puede fabricar un contorno artificial, repetir prolonga una meseta y reflejar conserva mejor la continuidad en muchos casos. La elección debe coincidir con el fenómeno y la librería.",
+          "Fuera de la imagen, constant usa un valor fijo, replicate prolonga el píxel de borde y reflect refleja los valores del interior. En modo valid no se inventan vecinos: solo se calcula donde cabe la ventana y la salida se reduce. Rellenar con ceros una región clara crea un salto falso en el marco; un detector puede confundirlo con un contorno real.",
         ],
       },
     ],
@@ -390,7 +384,7 @@ export const sectorThreeLessons: SectorLesson[] = [
     questions: [
       {
         id: "s3-filter2d-correlation",
-        prompt: "Según la referencia de OpenCV, ¿qué calcula realmente filter2D con el kernel recibido?",
+        prompt: "Pasas un kernel asimétrico a cv.filter2D de OpenCV sin modificar sus pesos. ¿Qué operación ejecuta?",
         options: ["Correlación sin girarlo", "Convolución girándolo siempre", "Producto matricial", "Mediana local"],
         correctIndex: 0,
         feedback: [
@@ -402,8 +396,8 @@ export const sectorThreeLessons: SectorLesson[] = [
       },
       {
         id: "s3-symmetric-kernel",
-        prompt: "¿Con qué kernel darán el mismo resultado correlación y convolución?",
-        options: ["Uno simétrico", "Solo uno 1×1", "Cualquier kernel de suma cero", "Ninguno"],
+        prompt: "Con ancla central, igual borde y kernels de dimensiones impares, ¿qué condición garantiza que correlación y convolución coincidan para cualquier imagen?",
+        options: ["El kernel no cambia al girarlo 180°", "Solo puede medir 1×1", "Sus pesos suman cero", "Ninguna condición lo garantiza"],
         correctIndex: 0,
         feedback: [
           "Correcto: si el giro deja K igual, ambas operaciones coinciden.",
@@ -445,8 +439,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "El promedio trata a todos por igual",
         paragraphs: [
-          "Un box blur normalizado reemplaza el centro por la media de su ventana. Es barato y fácil de entender, pero el corte brusco del rectángulo puede producir una respuesta menos natural que una ponderación gradual.",
-          "Aumentar el tamaño mezcla regiones más alejadas: elimina más fluctuación y también engorda o borra bordes finos.",
+          "Un filtro de caja normalizado sustituye cada píxel por la media de la ventana: en 3×3 cada una de las nueve muestras pesa 1/9. Una ventana mayor promedia más fluctuaciones, pero mezcla los dos lados de un borde y puede borrar líneas delgadas.",
         ],
       },
       {
@@ -489,7 +482,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       },
       {
         id: "s3-gaussian-sigma",
-        prompt: "Manteniendo lo demás, ¿qué suele provocar aumentar sigma en un Gaussian?",
+        prompt: "En un filtro gaussiano, con una ventana suficientemente grande, ¿qué efecto tiene aumentar la desviación espacial sigma?",
         options: ["Suavizado más amplio", "Más resolución", "Un umbral binario", "Inversión del kernel"],
         correctIndex: 0,
         feedback: [
@@ -531,15 +524,14 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "La mediana elige, no inventa",
         paragraphs: [
-          "Ordena los valores del vecindario y selecciona el central. En [20, 21, 22, 23, 255], la media sube a 68,2 por culpa del impulso; la mediana sigue siendo 22. Por eso funciona especialmente bien con ruido sal y pimienta.",
-          "Es un filtro no lineal: no puede expresarse como una suma fija de productos. También puede borrar estructuras más pequeñas que la ventana o deformar texturas si se aplica con demasiada fuerza.",
+          "En [20, 21, 22, 23, 255], la media vale 341/5 = 68,2; la mediana es el valor central ordenado, 22. La magnitud del impulso 255 arrastra la media, pero no cambia la posición central. Esta ventaja también es un riesgo: si un punto brillante es un defecto real y pocos vecinos lo comparten, la mediana puede borrarlo.",
         ],
       },
       {
         title: "Bilateral pregunta distancia y parecido",
         paragraphs: [
           "El filtro bilateral da más peso a píxeles cercanos y, además, a los que tienen intensidad o color parecido al centro. Dos vecinos separados por un borde fuerte influyen poco aunque estén pegados.",
-          "SigmaSpace controla cuánto territorio se consulta y sigmaColor cuánta diferencia tonal todavía se considera semejante. Valores grandes mezclan más; valores pequeños preservan más diferencias.",
+          "Dentro de la ventana, sigmaSpace regula cuánto cae el peso con la distancia en píxeles; sigmaColor, cuánto cae con la diferencia de intensidad o color. Subir solo sigmaColor permite mezclar vecinos de tonos más distintos y puede desdibujar un borde.",
         ],
         formula: {
           label: "PESO BILATERAL",
@@ -551,7 +543,7 @@ export const sectorThreeLessons: SectorLesson[] = [
         title: "Preservar bordes cuesta",
         paragraphs: [
           "El bilateral suele ser bastante más lento que un Gaussian porque los pesos tonales dependen del píxel central y cambian en cada posición. Ya no basta con reutilizar el mismo kernel fijo.",
-          "El filtro correcto depende del ruido y del detalle útil. Sal y pimienta sugiere mediana; ruido aproximadamente Gaussian suele casar con suavizado Gaussian; conservar discontinuidades puede justificar bilateral si la latencia lo permite.",
+          "Compara ambos filtros en las mismas imágenes: mide ruido en regiones uniformes, conservación del contraste en los bordes útiles y tiempo por imagen. El bilateral se justifica si mejora la detección de esos bordes sin superar la latencia disponible.",
         ],
       },
     ],
@@ -564,11 +556,11 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         id: "s3-salt-pepper-filter",
         prompt: "¿Qué filtro es una primera opción razonable para ruido sal y pimienta?",
-        options: ["Mediana", "Producto matricial", "Gamma", "Umbral global siempre"],
+        options: ["Mediana", "Promedio de caja", "Gamma", "Umbral global siempre"],
         correctIndex: 0,
         feedback: [
           "Correcto: los impulsos extremos suelen quedar fuera del valor central ordenado.",
-          "No es una estrategia de reducción de ruido espacial.",
+          "Un promedio incorpora la amplitud de cada impulso y puede extenderlo a los vecinos.",
           "Gamma remapea intensidades pero conserva los puntos impulsivos.",
           "Un umbral puede convertir el ruido en falsas regiones.",
         ],
@@ -617,15 +609,14 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Derivar una imagen discreta",
         paragraphs: [
-          "Como los píxeles son muestras separadas, aproximamos la derivada mediante diferencias entre vecinos. Sobel combina una diferencia en un eje con un pequeño suavizado en el otro, haciéndolo menos frágil que restar solo dos píxeles.",
-          "Un cambio izquierda-derecha grande produce |Gx| alto y suele corresponder a un borde aproximadamente vertical. El nombre Gx describe la dirección en la que cambia la intensidad, no la orientación visual de la línea.",
+          "Sobel estima Gx, el cambio de intensidad hacia la derecha, diferenciando en x y suavizando en y. Si la intensidad cambia bruscamente entre columnas pero apenas entre filas, |Gx| es grande y |Gy| pequeño. La frontera se prolonga en vertical: la dirección del cambio cruza la línea, no la sigue.",
         ],
       },
       {
         title: "Magnitud y ángulo cuentan historias distintas",
         paragraphs: [
-          "La magnitud sqrt(Gx² + Gy²) expresa fuerza de cambio. El ángulo atan2(Gy, Gx) expresa la dirección del gradiente y conserva el cuadrante; usar solo Gy/Gx pierde información y falla cuando Gx es cero.",
-          "La dirección del borde es perpendicular al gradiente. Si el gradiente apunta a la derecha, la transición separa normalmente regiones mediante una línea vertical.",
+          "Gx y Gy son las derivadas de intensidad en los ejes x e y. √(Gx² + Gy²) mide la fuerza del cambio; para un gradiente no nulo, atan2(Gy, Gx) da su dirección respecto de +x sin perder el cuadrante. Si y crece hacia abajo en la imagen, los ángulos positivos se ven en sentido horario.",
+          "El borde local sigue una línea de intensidad aproximadamente constante: es perpendicular al gradiente. Donde el gradiente es cero no hay una dirección de borde deducible de él.",
         ],
         formula: {
           label: "GRADIENTE 2D",
@@ -649,7 +640,7 @@ export const sectorThreeLessons: SectorLesson[] = [
     questions: [
       {
         id: "s3-gx-vertical-edge",
-        prompt: "Una transición fuerte de oscuro a claro al desplazarte de izquierda a derecha produce principalmente…",
+        prompt: "En una imagen de grises, la intensidad aumenta bruscamente entre columnas y no cambia entre filas. Si Gx y Gy miden el cambio horizontal y vertical, ¿qué observarás?",
         options: ["|Gx| alto y un borde vertical", "|Gy| alto y un borde horizontal", "Gradiente cero", "Solo un cambio de gamma"],
         correctIndex: 0,
         feedback: [
@@ -673,7 +664,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       },
       {
         id: "s3-signed-gradient",
-        prompt: "¿Por qué no conviene guardar directamente Gx en uint8?",
+        prompt: "Estimas con Sobel la derivada horizontal Gx de una imagen. ¿Por qué no conviene guardarla directamente en uint8?",
         options: ["Porque puede contener valores negativos", "Porque uint8 tiene demasiada precisión", "Porque cambia la resolución", "Porque Sobel solo devuelve booleanos"],
         correctIndex: 0,
         feedback: [
@@ -715,8 +706,8 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Unsharp mask: restar para encontrar detalle",
         paragraphs: [
-          "Primero suavizas la imagen. Original − suave deja una capa de altas frecuencias: bordes, textura y también ruido. Después sumas amount veces esa capa a la original.",
-          "El radio del suavizado decide qué escala se considera detalle; amount controla cuánto se amplifica. Un radio o cantidad inadecuados producen halos claros y oscuros alrededor de los contornos.",
+          "En unsharp masking, detalle = original − suavizada y salida = original + amount × detalle. El radio del suavizado fija el ancho de las estructuras que entran en la capa de detalle; amount es la ganancia.",
+          "Junto a un escalón, la media suavizada queda por debajo del lado claro y por encima del oscuro. Al sumar demasiado residuo se exageran ambos lados: aparecen franjas claras y oscuras (halos), y también se amplifica el ruido.",
         ],
         formula: {
           label: "MÁSCARA DE ENFOQUE",
@@ -744,7 +735,7 @@ export const sectorThreeLessons: SectorLesson[] = [
         options: ["Segunda derivada en x e y", "Solo primera derivada en x", "Ninguna derivada", "Derivada respecto al tiempo"],
         correctIndex: 0,
         feedback: [
-          "Correcto: suma ∂²I/∂x² y ∂²I/∂y².",
+          "Correcto: para la intensidad I suma su curvatura espacial en los dos ejes, ∂²I/∂x² + ∂²I/∂y².",
           "Eso sería una única componente de gradiente.",
           "Su propia definición es diferencial.",
           "Aquí opera sobre coordenadas espaciales de una imagen.",
@@ -758,14 +749,14 @@ export const sectorThreeLessons: SectorLesson[] = [
         feedback: [
           "Correcto: la resta conserva principalmente cambios que el suavizado eliminó.",
           "Un umbral no separa las escalas espaciales de esa forma.",
-          "No es la construcción habitual del método.",
+          "Restar de una mediana global compara con un único nivel, no con una versión suavizada del mismo vecindario.",
           "Eliminar la fase destruye estructura espacial esencial.",
         ],
       },
       {
         id: "s3-oversharpen-risk",
-        prompt: "¿Qué riesgo tiene aumentar demasiado amount en unsharp masking?",
-        options: ["Halos y ruido amplificado", "Resolución infinita", "Desaparecen todos los bordes", "El dtype se vuelve RGB"],
+        prompt: "En unsharp masking sumas a la imagen una capa de detalle multiplicada por amount. ¿Qué riesgo tiene una ganancia demasiado alta?",
+        options: ["Halos y ruido amplificado", "Aumento de la resolución espacial", "Desaparecen todos los bordes", "Conversión a tres canales"],
         correctIndex: 0,
         feedback: [
           "Correcto: la capa de alta frecuencia contiene señal y perturbaciones.",
@@ -794,8 +785,8 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Una cadena de cuatro etapas",
         paragraphs: [
-          "Primero reduce ruido, normalmente con Gaussian. Después obtiene magnitud y dirección del gradiente. La supresión de no máximos conserva solo los máximos locales en la dirección del gradiente y adelgaza las bandas.",
-          "Finalmente, la histéresis clasifica respuestas con dos umbrales. Los píxeles por encima del alto son bordes fuertes; los situados entre ambos solo sobreviven si están conectados con uno fuerte.",
+          "En el detector de Canny se suaviza para limitar el ruido y se calcula el gradiente para medir la fuerza y la dirección del cambio. La supresión de no máximos compara la magnitud a ambos lados en la dirección del gradiente y conserva las crestas: así adelgaza las bandas.",
+          "Después, la histéresis usa dos umbrales de magnitud: las respuestas fuertes inician bordes y las intermedias solo se conservan si están conectadas a una fuerte.",
         ],
         formula: {
           label: "SECUENCIA CANNY",
@@ -806,14 +797,13 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Dos umbrales protegen la continuidad",
         paragraphs: [
-          "Un único umbral alto rompería bordes cuya fuerza varía; uno bajo aceptaría demasiado ruido. La histéresis permite que tramos débiles sobrevivan cuando prolongan un borde convincente.",
-          "Un tramo débil aislado se descarta. La conectividad aporta contexto espacial sin convertir el algoritmo en un detector de objetos.",
+          "Un tramo intermedio se conserva si existe un camino de respuestas por encima del umbral bajo que lo conecte con una respuesta fuerte. No necesita tocarla directamente. Una isla débil sin ese camino se descarta: usar solo el umbral alto rompería el borde y usar solo el bajo aceptaría también la isla.",
         ],
       },
       {
         title: "Los parámetros dependen del dominio",
         paragraphs: [
-          "Umbrales muy bajos y poco suavizado producen textura y ruido; umbrales muy altos o demasiado blur pierden contornos de bajo contraste. La resolución, exposición y escala del defecto cambian el rango útil.",
+          "Con umbrales muy bajos, Canny marca como bordes variaciones de textura o ruido. Umbrales muy altos cortan contornos débiles; un suavizado excesivo puede borrar el cambio de intensidad antes de medirlo. Resolución, exposición y tamaño del defecto modifican el ajuste útil.",
           "En producción no conviene ajustar una sola imagen bonita. Debes validar por cámara, material y condiciones, registrando cómo varían continuidad, falsas alarmas y coste.",
         ],
       },
@@ -826,19 +816,19 @@ export const sectorThreeLessons: SectorLesson[] = [
     questions: [
       {
         id: "s3-canny-order",
-        prompt: "¿Qué secuencia representa mejor Canny?",
-        options: ["Suavizado → gradiente → no máximos → histéresis", "Histéresis → resize → PCA", "Gamma → mediana → clasificación", "FFT → erosión → entrenamiento"],
+        prompt: "¿En qué orden procesa una imagen el detector clásico de Canny para producir bordes finos y conectados?",
+        options: ["Suavizado → gradiente → no máximos → histéresis", "Gradiente → histéresis → suavizado → no máximos", "Suavizado → no máximos → gradiente → histéresis", "Histéresis → suavizado → gradiente → no máximos"],
         correctIndex: 0,
         feedback: [
-          "Correcto: cada etapa prepara o depura la anterior.",
-          "No son las etapas del detector.",
-          "Gamma y mediana pueden ser operaciones útiles, pero no definen Canny.",
-          "Mezcla técnicas que no forman esa cadena.",
+          "Correcto: primero se limita el ruido y se mide el cambio; luego se adelgazan las respuestas y se enlazan por histéresis.",
+          "Umbralizar antes de adelgazar marca bandas anchas; suavizar después tampoco evita que el ruido haya entrado en la derivada.",
+          "La supresión de no máximos necesita magnitud y dirección del gradiente, aún no calculadas en ese orden.",
+          "La histéresis selecciona respuestas de borde ya medidas y adelgazadas, no intensidades de entrada.",
         ],
       },
       {
         id: "s3-canny-weak-edge",
-        prompt: "Un píxel queda entre los umbrales bajo y alto. ¿Cuándo lo conserva la histéresis?",
+        prompt: "En Canny, tras la supresión de no máximos, la magnitud de un píxel cae entre los dos umbrales. ¿Cuándo lo conserva la histéresis?",
         options: ["Si está conectado a un borde fuerte", "Siempre", "Nunca", "Solo si es blanco puro"],
         correctIndex: 0,
         feedback: [
@@ -850,7 +840,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       },
       {
         id: "s3-canny-low-thresholds",
-        prompt: "¿Qué suele ocurrir si ambos umbrales son demasiado bajos?",
+        prompt: "Si bajas en exceso los dos umbrales de histéresis de Canny en una imagen con ruido, ¿qué suele ocurrir?",
         options: ["Aparecen muchos bordes de ruido o textura", "La imagen gana resolución", "Se elimina cualquier contorno", "Canny se vuelve un filtro Gaussian"],
         correctIndex: 0,
         feedback: [
@@ -881,14 +871,13 @@ export const sectorThreeLessons: SectorLesson[] = [
         title: "De píxeles a componentes periódicas",
         paragraphs: [
           "La transformada discreta de Fourier expresa una señal muestreada como suma de componentes con distintas frecuencias. En 2D, cada componente tiene ritmo y orientación espacial.",
-          "Tras centrar el espectro, la zona próxima al centro suele corresponder a frecuencias bajas. Alejarse representa cambios espaciales más rápidos; la orientación en el espectro está ligada a la de los patrones de la imagen.",
+          "Al centrar el espectro, la frecuencia cero (nivel medio) queda en el centro. Cerca aparecen cambios lentos de intensidad; lejos, oscilaciones más rápidas. La dirección de una frecuencia indica hacia dónde oscila el patrón: en unas franjas verticales la intensidad oscila horizontalmente.",
         ],
       },
       {
         title: "Magnitud dice cuánto; fase dice dónde",
         paragraphs: [
-          "El resultado es complejo. Su magnitud indica la fuerza de cada componente y su fase conserva la alineación espacial. Una imagen no se reconstruye fielmente guardando solo un espectro de barras bonito.",
-          "La fase suele transportar gran parte de la estructura reconocible. Alterarla sin criterio desplaza o desorganiza los patrones aunque la energía por frecuencia parezca similar.",
+          "En la transformada de Fourier, la magnitud mide cuánto aporta cada frecuencia y la fase determina cómo se alinean espacialmente sus oscilaciones. Un desplazamiento circular de la imagen cambia las fases sin cambiar las magnitudes: el mismo espectro de magnitud puede corresponder a píxeles en posiciones distintas.",
         ],
         formula: {
           label: "REPRESENTACIÓN COMPLEJA",
@@ -899,8 +888,8 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Filtrar aquí equivale a filtrar allí",
         paragraphs: [
-          "Un paso bajo atenúa altas frecuencias y suaviza; un paso alto reduce componentes lentas y resalta cambios. El teorema de convolución conecta ambos mundos: convolución espacial equivale a multiplicación en frecuencia.",
-          "Cortes rectangulares bruscos en el espectro pueden generar ringing, ondulaciones alrededor de bordes. Transiciones suaves como ventanas Gaussian o Butterworth reducen ese artefacto.",
+          "Multiplicar el espectro de la imagen por el del filtro y transformar de vuelta equivale a convolucionar. Con la transformada discreta de Fourier sin relleno se obtiene una convolución circular; para la lineal hay que rellenar lo suficiente para que los extremos no se envuelvan.",
+          "Un corte abrupto en frecuencia corresponde a un kernel espacial con lóbulos oscilantes. Su respuesta a un borde puede dejar ondulaciones (ringing). Una transición gradual, como la de un paso bajo gaussiano, reduce ese efecto.",
         ],
       },
     ],
@@ -916,7 +905,7 @@ export const sectorThreeLessons: SectorLesson[] = [
         options: ["Una variación suave y amplia", "Un píxel aislado", "Una etiqueta de clase", "El número de canales"],
         correctIndex: 0,
         feedback: [
-          "Correcto: cambia lentamente a lo largo de la imagen.",
+          "Correcto: una componente de baja frecuencia necesita muchos píxeles para completar un ciclo.",
           "Un impulso aislado contiene un abanico amplio de frecuencias.",
           "Fourier describe señal, no semántica de clase.",
           "Los canales pueden transformarse por separado; no son una frecuencia.",
@@ -967,14 +956,14 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Empieza por el contrato del problema",
         paragraphs: [
-          "Describe el detalle mínimo relevante en píxeles, el tipo de ruido, la variación de iluminación, el movimiento, el dtype, la resolución y el presupuesto de latencia. Sin eso, ‘aplica blur’ no es una decisión técnica.",
-          "Un arañazo de dos píxeles puede desaparecer con un Gaussian que mejora una fotografía ruidosa. Una mediana puede rescatar impulsos, pero también eliminar puntos pequeños que sí son defectos reales.",
+          "Mide el grosor del menor defecto en píxeles y observa si el ruido son impulsos aislados o fluctuaciones extendidas. Comprueba si el contraste varía con la iluminación, si el tipo numérico admite las salidas del filtro y cuánto tiempo por imagen permite la inspección.",
+          "Un arañazo de dos píxeles puede desaparecer con un gaussiano que reduce el ruido del fondo. Una mediana elimina impulsos aislados, pero también puede eliminar puntos de igual tamaño que sí son defectos.",
         ],
       },
       {
         title: "Ordenar operaciones cambia el resultado",
         paragraphs: [
-          "Suavizar antes de derivar reduce ruido amplificado. Umbralizar antes de suavizar convierte parte del ruido en regiones duras difíciles de recuperar. Enfocar antes de comprimir puede exagerar artefactos; hacerlo después no recupera lo perdido.",
+          "Suavizar antes de derivar atenúa el ruido que el gradiente confundiría con bordes. Umbralizar primero descarta las diferencias de intensidad: promediar una máscara no equivale a umbralizar la imagen suavizada. Enfocar antes del umbral puede convertir ruido en falsos objetos.",
           "Documenta shape, rango, color y dtype a la entrada y salida de cada etapa. Los contratos numéricos evitan que una operación correcta reciba datos con otra escala o convención.",
         ],
         formula: {
@@ -986,8 +975,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       {
         title: "Ablación antes que intuición visual",
         paragraphs: [
-          "Compara un baseline sin la operación y variantes con parámetros razonables. Mide métricas del sistema completo por subgrupos: cámara, turno, material, tamaño de objeto y condiciones difíciles.",
-          "En una entrevista exigente, una buena respuesta incluye alternativas y fallos: por qué Gaussian y no bilateral, cómo escoger sigma, qué pasa en los bordes, cuánto cuesta y qué experimento demostraría que la decisión ayuda.",
+          "Evalúa las mismas imágenes con y sin el filtro, manteniendo el resto del sistema fijo. Si comparas varios ajustes, escógelos en validación y confirma el elegido en datos reservados. Mide defectos detectados, falsas alarmas y latencia; separa por cámara y por tamaño para no ocultar la pérdida de los defectos más finos.",
         ],
       },
     ],
@@ -1023,7 +1011,7 @@ export const sectorThreeLessons: SectorLesson[] = [
       },
       {
         id: "s3-pipeline-interview",
-        prompt: "En una entrevista de arquitectura, ¿qué hace más sólida la elección de un Gaussian?",
+        prompt: "Propones un filtro gaussiano para inspeccionar arañazos finos en tiempo real. ¿Qué justificación permitiría decidir si es adecuado?",
         options: ["Explicar ruido, escala, sigma, coste, bordes y validación", "Decir que siempre funciona", "Omitir alternativas", "Elegir el kernel más grande"],
         correctIndex: 0,
         feedback: [

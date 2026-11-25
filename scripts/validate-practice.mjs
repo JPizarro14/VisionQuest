@@ -48,6 +48,7 @@ const {
 } = await import(dataUrl(file("app/practice-session.ts")));
 const ids = new Set(), prompts = new Set(), familyCounts = new Map();
 const errors = [];
+const previousCard = /^(?:con (?:esos conteos|los mismos puntos)|mantén los costes|en el (?:ejercicio|ejemplo) anterior)\b|(?:como (?:se vio|vimos) (?:antes|arriba)|según la pregunta anterior)/iu;
 const numbers = (prompt, pattern) => {
   const match = prompt.match(pattern);
   if (!match) throw new Error("No se reconocen los datos del cálculo: " + prompt);
@@ -152,7 +153,7 @@ const calculationAnswers = {
     return fraction(tp, tp + fp + fn);
   },
   cer: prompt => {
-    const [length, substitutions] = numbers(prompt, /de (\d+) caracteres: hay (\d+) sustituciones/);
+    const [length, substitutions] = numbers(prompt, /de (\d+) caracteres, basta sustituir (\d+) car/);
     return fraction(substitutions, length);
   },
   "vit-patches": prompt => {
@@ -165,7 +166,7 @@ const calculationAnswers = {
     return seconds * fps;
   },
   "stereo-depth": prompt => {
-    const [focal, baseline, disparity] = numbers(prompt, /focal (\d+) px, baseline (\d+(?:[.,]\d+)?) m, disparidad (\d+) px/);
+    const [focal, baseline, disparity] = numbers(prompt, /focal horizontal es (\d+) px, la separación entre cámaras es (\d+(?:[.,]\d+)?) m y un punto cambia (\d+) columnas/);
     return (focal * baseline / disparity).toFixed(3) + " m";
   },
   "label-agreement": prompt => {
@@ -191,7 +192,7 @@ const calculationAnswers = {
     return pieces * prevalence * (100 - recall) / 10000;
   },
   "resize-object": prompt => {
-    const [object, width, resized] = numbers(prompt, /de (\d+) px de ancho en una imagen de (\d+) px se redimensiona a (\d+) px de ancho/);
+    const [object, width, resized] = numbers(prompt, /objeto de (\d+) px de ancho en una foto de (\d+) px de ancho\. Reduces la foto completa a (\d+) px/);
     return (object * resized / width).toFixed(2) + " px";
   },
 };
@@ -225,11 +226,13 @@ for (const item of practiceItems) {
           item.feedback.some((f, i) => i !== item.correctIndex && f.trim().length < 25))
         errors.push("Incomplete code exercise " + item.id);
     }
-  } else if (!item.solution.trim() || item.rubric.length < 2 || item.rubric.some(r => !r.trim())) {
-    errors.push("Missing solution/rubric " + item.id);
+  } else if (!item.solution.trim() || (item.rubric !== undefined && (item.rubric.length < 2 || item.rubric.some(r => !r.trim())))) {
+    errors.push("Missing solution or incomplete rubric " + item.id);
   }
   if (/Después, responde a este objetivo:|Qué ocurre, por qué importa y qué matiz/.test(item.prompt))
     errors.push("Generic reasoning template " + item.id);
+  if (previousCard.test(item.prompt))
+    errors.push("La pregunta depende de otra ficha: " + item.id);
 }
 const byId = new Map(practiceItems.map(item => [item.id, item]));
 for (const id of [...individualPlacements.keys(), ...readingPractice]) {
@@ -245,7 +248,7 @@ for (const lesson of lessons) {
     if (retiredPractice.has(id)) continue;
     const item = byId.get(id);
     if (item?.kind !== "open" || item.prompt !== authored?.[index] ||
-        item.solution !== section.paragraphs.join(" "))
+        item.solution !== section.paragraphs.join("\n\n"))
       errors.push("Mismatched section question/solution " + lesson.id + "-" + (index + 1));
   }
 }
@@ -272,6 +275,10 @@ for (const [id, expected] of [
   const item = byId.get(id);
   if (item?.kind !== "open" || expected.some(answer => !item.solution.includes(answer)))
     errors.push("Incomplete worked answer " + id);
+}
+for (const stage of stages) {
+  if ([stage.transfer[0], ...stage.quiz.map(q => q.prompt)].some(prompt => previousCard.test(prompt)))
+    errors.push("Un ejercicio de la etapa depende de otro enunciado: " + stage.id);
 }
 if (familyCounts.size !== Object.keys(calculationAnswers).length || [...familyCounts.values()].some(count => count !== 1))
   errors.push("Missing or duplicate numerical family");

@@ -20,7 +20,7 @@ export type PracticeOpen = {
   category: "razonamiento" | "laboratorio" | "codigo" | "caso";
   prompt: string;
   solution: string;
-  rubric: string[];
+  rubric?: string[];
 };
 
 export type PracticeItem = PracticeChoice | PracticeOpen;

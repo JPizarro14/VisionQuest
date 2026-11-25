@@ -17,10 +17,7 @@ const courseChoices: PracticeChoice[] = allLessons.flatMap((lesson) =>
     prompt: question.prompt,
     options: question.options,
     correctIndex: question.correctIndex,
-    feedback: question.feedback.map((message, index) =>
-      index === question.correctIndex && message.length < 55
-        ? message + " Idea clave: " + lesson.keyIdea
-        : message),
+    feedback: question.feedback,
   })),
 );
 
@@ -30,12 +27,11 @@ const reasoning: PracticeOpen[] = allLessons.flatMap((lesson) => {
     throw new Error(`Preguntas de razonamiento incompletas para la misión ${lesson.id}.`);
   }
   return lesson.sections.map((section, index) => ({
-      kind: "open" as const,
-      id: `section-${lesson.id}-${index + 1}`, lessonId: lesson.id,
-      category: "razonamiento" as const,
-      prompt: prompts[index],
-      solution: section.paragraphs.join(" "),
-      rubric: ["Responde a cada parte sin consultar las opciones.", "Contrasta el mecanismo, el ejemplo o la convención con la solución."],
+    kind: "open" as const,
+    id: `section-${lesson.id}-${index + 1}`, lessonId: lesson.id,
+    category: "razonamiento" as const,
+    prompt: prompts[index],
+    solution: section.paragraphs.join("\n\n"),
   }));
 });
 
@@ -43,7 +39,6 @@ const transferCases: PracticeOpen[] = Object.entries(practiceChallenges).map(([l
   kind: "open", id: `case-${lessonId}`, lessonId, category: "caso",
   prompt: challenge.prompt,
   solution: challenge.check,
-  rubric: ["Declara los supuestos necesarios.", "Resuelve el caso con unidades y criterio de evaluación.", "Contrasta tu razonamiento con la pauta; admite soluciones alternativas justificadas."],
 }));
 
 // Permanecen en la biblioteca de origen; en una ronda su contenido ya lo cubre
